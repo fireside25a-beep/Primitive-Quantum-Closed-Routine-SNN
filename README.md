@@ -4,53 +4,53 @@
 
 ![Version](https://img.shields.io/badge/version-0.4.6.3%20readout%20decoder-203a63) ![License](https://img.shields.io/badge/license-Apache--2.0-0b785d) ![Core](https://img.shields.io/badge/core-C11%20%2B%20C%2B%2B23%20%2B%20Fortran-203a63) ![Model](https://img.shields.io/badge/model-fixed--point%20LIF%20%2B%20STDP-794a8f) ![Replay](https://img.shields.io/badge/replay-byte--exact-0b785d)
 
-A deterministic spiking network with a C11 simulation core, weighted routing and 1024\-bit similarity input, backed by exact causal event records and seeded entropy\. Spikes can drive a five\-qubit stabilizer **simulation**, whose syndrome and correction feed current back to the network on the next tick\. An optional separate mode encodes synaptic\-weight bits in simulated five\-qubit codewords and checks restoration before a network step\. The command also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through separate, explicit entry points\.
+A deterministic spiking network with a C11 simulation core, weighted routing and 1024\-bit similarity input, backed by exact causal event records and seeded entropy\. Two optional, separately invoked paths use the simulated five\-qubit code: `world-run` runs spike\-triggered fault correction and queues feedback current on a nonzero syndrome; ordinary `run` with `qmemory weights5` checks encoded synaptic\-weight bits and restores weights before each network step\. They reuse five\-qubit code routines and certificate checks but have separate tableau state and receipts\. The command also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through separate, explicit entry points\.
 
 The top\-level Apache\-2\.0 license covers NeuroMantle’s original code\. Each bundled companion keeps its own license in `vendor/`\.
 
 For the sequence of validated changes and the evidence behind each stage, start with [Development path](docs/DEVELOPMENT_PATH.md)\. The [test matrix](docs/TEST_MATRIX.md) identifies executable checks for this snapshot; [evidence index](evidence/INDEX.md) separates current replay artifacts from earlier control and training evaluations\.
 
 ```mermaid
-flowchart TD
-  A["Scenario and feature events"] --> B["1024-bit spatial selection"]
-  B --> C["Fixed-point LIF network"]
-  C --> D["Delayed synapses and STDP"]
-  D --> E["Weighted route selection"]
-  E --> J["C or Python component"]
-  J --> C
-  T["Simulated nanosecond grid"] --> C
-  C --> F["Exact causal graph"]
-  E --> F
-  F --> G["Replay receipt"]
-  H["Seeded entropy ledger"] --> C
-  H --> F
-  I["Local model or program"] --> K["Proposal admission"]
-  K --> C
-  K --> F
-  L["SECDED checkpoint"] --> C
-  C --> L
-  C --> P["Optional spike-gated Pauli X Y Z"]
-  P --> Q["Five simulated qubits in a stabilizer tableau"]
-  Q --> R["Four-sign syndrome and correction"]
-  R --> S["Next-tick feedback current"]
-  S --> C
-  C --> W["Optional encoded weight bits"]
-  W --> V["Separate five-qubit codeword tableaus"]
-  V --> X["Logical-Z readout and Fortran checks"]
-  X --> Y["Atomic weight restoration"]
-  Y --> C
-  Q --> F
-  V --> F
-  G --> M["Finite intervention search"]
-  M --> N["Interaction measurements and graphs"]
-  M --> O["Compiled stimulus protocol"]
-  O --> C
+flowchart TB
+  Cert["Five-qubit code and certificate; independent tableau states"] --> WInit
+  Cert --> MInit
+  subgraph World["world-run: .nmw coupled scenario"]
+    WInit["Initialize one encoded five-qubit tableau"] --> WStep["Fixed-point SNN step and conservative field"]
+    WStep --> WReceipt["World tick state and any correction in world receipt"]
+    WStep --> WSpike["Configured neuron spikes"]
+    WSpike --> WFault["Configured X, Y or Z rule applies declared fault"]
+    WFault --> WRead["Configured Q rule reads four stabilizer signs"]
+    WRead --> WCorrect["C tableau correction, at most one fault"]
+    WCorrect -->|nonzero syndrome| WFeedback["Queue configured current for next world tick"]
+    WFeedback --> WStep
+    WCorrect --> WReceipt
+  end
+  subgraph Memory["run: .nm scenario with optional qmemory weights5"]
+    MInit["Each 32-bit weight becomes 32 five-qubit codewords"] --> MRestore{"Scheduled qfault before this step?"}
+    MRestore -->|none| MClean["C verifies canonical codewords"]
+    MClean --> MFortranClean["Fortran clean weight reconstruction"]
+    MRestore -->|fault| MFault["Apply faults; C corrects affected tableaus"]
+    MFault --> MRead["Read four signs and raw logical Z"]
+    MRead --> MFortranFault["Fortran checks expected bits and reconstructs"]
+    MFortranClean --> MCheck["Check decoded bits and corrected codewords"]
+    MFortranFault --> MCheck
+    MCheck --> MCommit["Commit all restored weights or refuse"]
+    MCommit --> MStep["Fixed-point LIF, delayed synapses and STDP"]
+    MStep --> MRoute["Weighted route; queue optional module current"]
+    MRoute --> MStep
+    MStep --> MCapture["Capture updated weights into codewords"]
+    MCapture --> MRestore
+    MCapture --> MReceipt["Network receipt with qmemory root and correction count"]
+    MInput["Feature input and optional nanosecond grid"] --> MStep
+    MEcc["Separate optional SECDED restore before step"] --> MRestore
+  end
+  WReceipt --> WVerify["world-verify reruns world scenario"]
+  MReceipt --> MVerify["verify reruns network scenario"]
 ```
 
-The two tableau branches have distinct roles\. The spike\-gated branch is a
-software five\-qubit feedback experiment\. The encoded\-weight branch is an
-optional software memory\-recovery mode\. Both are recorded in replay receipts;
-neither connects to a physical quantum processor\.
+These are **two separate runtime modes**, not two simultaneous five\-qubit registers in one execution\. In a certified `.nmw` `world-run`, one encoded five\-qubit tableau belongs to the coupled world\. A configured spike can gate an X, Y or Z fault and a `Q` rule on that same tableau\. The C correction reads four stabilizer signs, corrects at most one declared fault and, only for a nonzero syndrome, queues current for the next world tick\. This path checks the feedback state; it does not restore synaptic weights\.
+
+In an ordinary `.nm` `run` with `qmemory weights5`, each bit of each configured 32\-bit synaptic weight has its own simulated five\-qubit codeword\. Before a network step, scheduled `qfault` operations affect those codewords\. The C tableau correction and raw logical\-Z result feed a Fortran decoder, which checks the separately stored expected weight bits; corrected codewords must match their canonical states before all restored weights are committed\. After the LIF and STDP step, changed weights are encoded again\. This path checks and restores the modeled weight data; its correction does not create feedback current\. The two paths reuse five\-qubit code machinery, but their tableau instances, scenario formats, receipts and verification commands are distinct\. The SECDED checkpoint is separate, and neither path uses a physical quantum processor\.
 
 The C hot path calculates every neuron transition, delayed delivery and plasticity update\. A single ordered scheduler makes simultaneous spikes deterministic\. Exact rational arithmetic checks candidate plasticity transitions in ten\-tick batches, and incremental SHA\-256 state roots, a causal graph and a seeded entropy ledger form the receipt path\. Routing and spatial search use the supplied NeuroRoute code\. A weighted route can invoke a bound C or Python executable and inject its computed current on the next tick\. Every tick records before/after roots, spike routing, module output, causal parent and entropy root\. A refusal also has a replayable receipt\.
 
