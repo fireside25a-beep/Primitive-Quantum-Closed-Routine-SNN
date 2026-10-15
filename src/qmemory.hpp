@@ -4,6 +4,7 @@
 #include "primitiveq.h"
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -19,13 +20,13 @@ class Weights {
     static_assert(sizeof(Cell)==10*sizeof(pq_row));
     std::vector<Cell> cells_;
     std::vector<std::uint8_t> fault_count_;
-    std::vector<std::int32_t> encoded_words_;
     std::size_t edges_;
     std::size_t active_faults_=0;
-    bool initialized_=false;
+    void encode_edge(std::size_t edge,std::int32_t weight);
 public:
     explicit Weights(const nm_network &network);
     void capture(const nm_network &network);
+    void capture_updated(const nm_network &network,std::span<const std::int32_t> before);
     void fault(std::size_t edge,unsigned bit,unsigned qubit,char op);
     unsigned restore(nm_network &network);
     std::string root() const;

@@ -28,6 +28,29 @@ with tempfile.TemporaryDirectory(prefix="nm-five-code-") as tmp:
     assert ";spikes=1;" in actual and "measure=2:2:0" in actual
     assert receipt.read_bytes() == (evidence / "run.receipt").read_bytes()
     assert graph.read_bytes() == (evidence / "dynamics.svg").read_bytes()
+    baseline_state = next(line.split(";state=")[1].split(";")[0]
+                          for line in actual.splitlines() if line.startswith("tick=0;"))
+    for round_id in range(3):
+        for generator in range(4):
+            scenario.write_text(source + f"qreadout_flip 0 1 {round_id} {generator}\n")
+            run("world-run", scenario, receipt, graph)
+            run("world-verify", scenario, receipt, graph)
+            faulted = receipt.read_text()
+            assert f";readout_flip=1:{round_id}:{generator};" in faulted
+            tick0 = next(line for line in faulted.splitlines() if line.startswith("tick=0;"))
+            assert tick0.split(";state=")[1].split(";")[0] == baseline_state
+            assert "corrected=2;syndrome=1:8:1," in tick0
+            receipt.write_text(faulted.replace(";readout_flip=1:", ";readout_flip=0:", 1))
+            run("world-verify", scenario, receipt, graph, admitted=False)
+    scenario.write_text(source + "qreadout_flip 0 1 0 0\nqreadout_flip 0 1 1 0\n")
+    run("world-run", scenario, receipt, graph, admitted=False)
+    assert "multiple readout faults" in receipt.read_text()
+    scenario.write_text(source + "qreadout_flip 1 1 0 0\n")
+    run("world-run", scenario, receipt, graph, admitted=False)
+    assert "coupled transition refused" in receipt.read_text()
+    scenario.write_text(source + "qreadout_flip 0 1 3 0\n")
+    run("world-run", scenario, receipt, graph, admitted=False)
+    assert "invalid Q readout fault" in receipt.read_text()
 
     for gate, syndrome, correction in (("Z",5,2),("Y",13,3)):
         scenario.write_text(source.replace("qrule 0 X 0", f"qrule 0 {gate} 0"))

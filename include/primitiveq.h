@@ -23,7 +23,19 @@ int pq_reset(pq_state *,unsigned q,uint64_t draw,unsigned *random_branch);
  * This decoder assumes at most one physical Pauli error since its last read. */
 int pq_init_five_code(pq_state *);
 int pq_five_syndrome(const pq_state *,unsigned *syndrome);
+/* Three rounds of four generator measurements with a resettable sixth
+ * ancilla. A single classical readout flip can be injected for testing.
+ * UINT_MAX for flip_round disables injection. Input tableau is unchanged. */
+int pq_five_syndrome_circuit(const pq_state *,unsigned *syndrome);
+int pq_five_syndrome_circuit_readout(const pq_state *,unsigned flip_round,
+                                    unsigned flip_generator,unsigned *syndrome);
+/* Measure logical Z=ZZZZZ with a sixth ancilla. Only a deterministic bit
+ * eigenstate is accepted here; a coherent logical superposition needs an
+ * explicit measurement/draw contract and cannot serve as a classical weight. */
+int pq_five_logical_z_circuit(const pq_state *,unsigned *bit);
 int pq_five_correct(pq_state *,unsigned *syndrome,unsigned *correction);
+int pq_five_correct_readout(pq_state *,unsigned flip_round,unsigned flip_generator,
+                            unsigned *syndrome,unsigned *correction);
 /* Pauli error syndromes for bounded commuting generators, packed by error index. */
 int pq_syndrome_scalar(const pq_row *,unsigned generators,unsigned n,
                        const pq_row *,size_t count,uint32_t *out);

@@ -1,14 +1,16 @@
 # Admission and replay
 
 The optional `qmemory weights5` mode binds an exactly matching five-qubit
-certificate, encoded synaptic weight bits, a compiled Fortran decoder and
+certificate, encoded synaptic weight bits, an integer decoder and
 declared Pauli faults into the ordinary SNN receipt. Independent statevector
 tests enumerate both logical basis values and all 15 single-Pauli syndromes
 for each. [ECC](ECC.md) specifies the bounded software fault model. These
 finite tests do not prove every possible behavior of the full simulator.
-The faulted-cell path additionally checks raw logical signs and unique
-syndromes against a separately maintained expected-bit snapshot before commit.
-This remains a software observation; see [readout and entropy](READOUT_ENTROPY.md).
+The faulted-cell path obtains syndrome and logical-Z readouts through an
+explicit simulated ancilla circuit. Decoding does not use the old expected-bit
+snapshot; a corrected cell must match the complete canonical codeword of the
+decoded bit before commit. This remains a software observation; see
+[readout and entropy](READOUT_ENTROPY.md).
 
 The network parser rejects unknown directives, extra fields, duplicate neuron IDs, invalid edge endpoints or timing, invalid feature keys, missing seeds for stochastic inputs, and out-of-run stimuli. Errors are recorded in `NEUROMANTLE_REFUSAL_V1` with the scenario digest, deterministic reason and receipt root. A valid scenario records every tick under `NEUROMANTLE_RECEIPT_V1`.
 

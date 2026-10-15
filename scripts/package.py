@@ -8,7 +8,7 @@ import sys
 import zipfile
 
 root=Path(__file__).resolve().parents[1]
-out=Path(sys.argv[1]).resolve() if len(sys.argv)==2 else root.parent/'NeuroMantle-0.4.6.3-readout-decoder.zip'
+out=Path(sys.argv[1]).resolve() if len(sys.argv)==2 else root.parent/'NeuroMantle-0.4.7-Live.zip'
 source_epoch=int(os.environ.get('SOURCE_DATE_EPOCH','1792022400'))
 stamp=datetime.fromtimestamp(source_epoch,timezone.utc)
 if not 1980<=stamp.year<=2107:raise SystemExit('invalid SOURCE_DATE_EPOCH')
@@ -30,7 +30,7 @@ files.append(root/'SOURCE_MANIFEST.sha256')
 out.parent.mkdir(parents=True,exist_ok=True)
 with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
     for p in sorted(files):
-        rel='NeuroMantle-0.4.6.3-readout-decoder/'+p.relative_to(root).as_posix()
+        rel=root.name+'/'+p.relative_to(root).as_posix()
         info=zipfile.ZipInfo(rel,when)
         info.compress_type=zipfile.ZIP_DEFLATED
         info.external_attr=((0o100755 if p.stat().st_mode&0o111 else 0o100644)<<16)

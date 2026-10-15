@@ -1,4 +1,5 @@
 #include "world.hpp"
+#include "observer.hpp"
 #include "neuro_world.h"
 #include "neuro_improve.h"
 #include "qecc_gate.hpp"
@@ -28,6 +29,7 @@ struct Edge {std::uint16_t a,b;std::int32_t weight,lo,hi;std::uint16_t delay,plu
 struct Field {U64 mass,threshold;std::uint16_t sensor;I64 current;};
 struct Stim {U64 tick;std::uint16_t neuron;I64 current;bool noise;};
 struct Trial {U64 source,target;I64 current;};
+struct ReadoutFlip {U64 tick;unsigned rule,round,generator;};
 struct Config {
     U64 clock=0,seed=0,steps=0;unsigned qubits=0,goal_node=0,goal_neuron=0;
     bool have_seed=false,have_goal=false,five_code=false;
@@ -35,6 +37,7 @@ struct Config {
     std::vector<Neuron> neurons;std::vector<Edge> edges;std::vector<Field> fields;
     std::vector<nm_world_link> links;std::vector<nm_world_rule> rules;
     std::vector<Stim> stimuli,pulses;std::vector<Trial> train,validation,holdout;
+    std::vector<ReadoutFlip> readout_flips;
 };
 template<class T>T number(std::istringstream &in){
     std::string s;if(!(in>>s))throw std::runtime_error("missing integer");
@@ -118,6 +121,10 @@ Config parse(const std::string &text){
                 r.op=gate[0];r.a=number<std::uint16_t>(in);r.b=number<std::uint16_t>(in);
                 r.output_neuron=number<std::uint16_t>(in);r.output_current=number<I64>(in);
                 finish(in);s.rules.push_back(r);
+            }else if(op=="qreadout_flip"){
+                ReadoutFlip f{number<U64>(in),number<unsigned>(in),
+                              number<unsigned>(in),number<unsigned>(in)};
+                finish(in);s.readout_flips.push_back(f);
             }else if(op=="stim"||op=="field_noise"||op=="pulse"){
                 Stim x{number<U64>(in),number<std::uint16_t>(in),number<I64>(in),op=="field_noise"};
                 finish(in);if(x.current<0)throw std::runtime_error("negative current");
@@ -137,13 +144,23 @@ Config parse(const std::string &text){
        !s.steps||s.steps>128||s.neurons.empty()||s.neurons.size()>NM_MAX_NEURONS||
        s.edges.size()>NM_MAX_EDGES||s.fields.empty()||s.fields.size()>NM_WORLD_NODES||
        s.links.empty()||s.links.size()>NM_WORLD_LINKS||s.rules.size()>NM_WORLD_RULES||
-       s.stimuli.size()>128||s.pulses.size()>3||s.train.size()>8||s.validation.size()>8||s.holdout.size()>8)
+       s.stimuli.size()>128||s.pulses.size()>3||s.train.size()>8||s.validation.size()>8||s.holdout.size()>8||
+       s.readout_flips.size()>128)
         throw std::runtime_error("world declaration missing or capacity exceeded");
     if(s.have_goal&&(s.goal_node>=s.fields.size()||s.goal_neuron>=NM_MAX_NEURONS))
         throw std::runtime_error("invalid goal");
     if(s.five_code){
         if(s.qubits!=5)throw std::runtime_error("certified code needs exactly five qubits");
         admit_five_certificate(s);
+    }
+    for(size_t i=0;i<s.readout_flips.size();i++){
+        const auto &f=s.readout_flips[i];
+        if(!s.five_code||f.tick>=s.steps||f.rule>=s.rules.size()||
+           s.rules[f.rule].op!='Q'||f.round>=3||f.generator>=4)
+            throw std::runtime_error("invalid Q readout fault declaration");
+        for(size_t j=0;j<i;j++)if(s.readout_flips[j].tick==f.tick&&
+                                  s.readout_flips[j].rule==f.rule)
+            throw std::runtime_error("multiple readout faults for one Q rule");
     }
     for(const auto &x:s.stimuli)if(x.tick>=s.steps)throw std::runtime_error("world stimulus beyond duration");
     for(const auto &x:s.pulses)if(x.tick>=s.steps)throw std::runtime_error("world pulse beyond duration");
@@ -208,12 +225,14 @@ struct Run {std::string receipt;std::vector<Sample> samples;U64 final_mass=0,goa
 Run execute(const Config &s,const std::string &original,const Trial *trial=nullptr,
             const std::int32_t *parameters=nullptr,int pulse_mask=-1){
     auto w=instantiate(s,trial,parameters);
+    const auto scenario_digest=hash(original);
+    nm_observer::Observer observer;observer.begin("world",scenario_digest);
     surreal::EntropyLedger quantum(s.seed,UINT64_C(0x5051));
     surreal::EntropyLedger field(s.seed,UINT64_C(0x464c));
     surreal::CausalGraph graph;
     Run run;std::string &receipt=run.receipt;
     receipt=(s.five_code?"NEUROMANTLE_COUPLED_QECC5_V1\n":"NEUROMANTLE_COUPLED_V1\n");
-    receipt+="scenario="+hash(original)+"\nclock_ns="+
+    receipt+="scenario="+scenario_digest+"\nclock_ns="+
         std::to_string(s.clock)+"\nseed="+std::to_string(s.seed)+"\n";
     if(s.five_code)receipt+="qecc_certificate="+s.certificate_label+":"+
         s.certificate_hash+":"+s.certificate_proof+"\n";
@@ -245,6 +264,8 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
         }
         for(unsigned i=0;i<w->rule_count;i++)if(w->rules[i].op=='M'||w->rules[i].op=='R')
             input.draws[i]=quantum.draw();
+        for(const auto &f:s.readout_flips)if(f.tick==tick)
+            input.readout_flip[f.rule]=static_cast<std::uint8_t>(1u+4u*f.round+f.generator);
         auto before=state(*w);nm_world_report report{};
         if(nm_world_step(w.get(),&input,&report))throw std::runtime_error("coupled transition refused");
         auto after=state(*w);
@@ -262,6 +283,7 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
             if(i)fired+=",";
             fired+=std::to_string(report.spikes.ids[i]);
         }
+        const auto observer_offset=receipt.size();
         receipt+="tick="+std::to_string(tick)+";time_ns="+
             std::to_string(tick*s.clock)+";mass="+std::to_string(report.mass_after)+
             ";target="+std::to_string(w->nodes[s.have_goal?s.goal_node:0].mass)+
@@ -275,8 +297,14 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
             for(unsigned i=0;i<w->rule_count;i++)if(w->rules[i].op=='Q')
                 receipt+=std::to_string(i)+":"+std::to_string(report.syndromes[i])+":"+
                     std::to_string(report.corrections[i])+",";
+            for(unsigned i=0;i<w->rule_count;i++)if(input.readout_flip[i]){
+                auto flip=input.readout_flip[i]-1u;
+                receipt+=";readout_flip="+std::to_string(i)+":"+
+                    std::to_string(flip/4u)+":"+std::to_string(flip%4u);
+            }
         }
         receipt+=";state="+after+";entropy="+eroot+";event="+parent+"\n";
+        observer.tick(tick,std::string_view(receipt).substr(observer_offset));
         run.samples.push_back({tick,w->nodes[s.have_goal?s.goal_node:0].mass,
                                report.flux_total,report.spikes.count,report.measurement_ones});
     }
@@ -285,6 +313,7 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
     receipt+="causal_root="+graph.root_hash()+"\nquantum_entropy_root="+
         quantum.root()+"\nfield_entropy_root="+field.root()+"\n";
     receipt+="receipt_root="+hash(receipt)+"\n";
+    observer.finish(std::string_view(receipt).substr(receipt.rfind("receipt_root=")));
     return run;
 }
 std::string svg(const Run &run,bool five_code){

@@ -1,10 +1,21 @@
 # PrimitiveQ: Simulated Quantum Closed-Loop SNN
 
-**NeuroMantle 0.4.6.3** · deterministic spiking network and replayable software quantum routine
+![Recorded neuron activity from a 511-neuron, 510-synapse run](evidence/observer/network-live.gif)
 
-![Version](https://img.shields.io/badge/version-0.4.6.3%20readout%20decoder-203a63) ![License](https://img.shields.io/badge/license-Apache--2.0-0b785d) ![Core](https://img.shields.io/badge/core-C11%20%2B%20C%2B%2B23%20%2B%20Fortran-203a63) ![Model](https://img.shields.io/badge/model-fixed--point%20LIF%20%2B%20STDP-794a8f) ![Replay](https://img.shields.io/badge/replay-byte--exact-0b785d)
+The optional [live signal observer](docs/OBSERVER.md) displays actual spike and route
+metadata in a separate browser process. A nonblocking output pipe publishes tick
+records after the core appends them. The display can lose frames without altering
+network state, entropy, receipt bytes, or the exit status of the run. Its final
+playback comes from a completed receipt that passes independent replay. See the
+[recorded expansion animation](evidence/observer/network-reveal.gif) and
+[viewer screenshot](evidence/observer/viewer.png). This is a graph layout of
+declared neurons and synapses, not biological anatomy.
 
-A deterministic spiking network with a C11 simulation core, weighted routing and 1024-bit similarity input, backed by exact causal event records and seeded entropy. Spikes can drive a five-qubit stabilizer **simulation**, whose syndrome and correction feed current back to the network on the next tick. An optional separate mode encodes synaptic-weight bits in simulated five-qubit codewords and checks restoration before a network step. The command also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through separate, explicit entry points.
+**NeuroMantle 0.4.7** · deterministic spiking network and replayable software quantum circuit
+
+![Version](https://img.shields.io/badge/version-0.4.7%20ancilla%20circuit-203a63) ![License](https://img.shields.io/badge/license-Apache--2.0-0b785d) ![Core](https://img.shields.io/badge/core-C11%20%2B%20C%2B%2B23%20%2B%20Fortran-203a63) ![Model](https://img.shields.io/badge/model-fixed--point%20LIF%20%2B%20STDP-794a8f) ![Replay](https://img.shields.io/badge/replay-byte--exact-0b785d)
+
+A deterministic spiking network with a C11 simulation core, weighted routing and 1024-bit similarity input, backed by exact causal event records and seeded entropy. One `neuromantle` executable drives both scenario formats through the same C11 neuron-step function. With a `.nmw` scenario, configured spikes can trigger correction of a simulated five-qubit state and queue feedback current. With a `.nm` scenario and `qmemory weights5`, the same SNN core runs after encoded synaptic-weight bits are checked and restored. These modes use the same five-qubit code routines, but each run owns its network and tableau state. The executable also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through explicit commands.
 
 The top-level Apache-2.0 license covers NeuroMantle's original code. Each bundled companion keeps its own license in `vendor/`.
 
@@ -12,51 +23,55 @@ For the sequence of validated changes and the evidence behind each stage, start 
 
 ```mermaid
 flowchart TD
-  A["Scenario and feature events"] --> B["1024-bit spatial selection"]
-  B --> C["Fixed-point LIF network"]
-  C --> D["Delayed synapses and STDP"]
-  D --> E["Weighted route selection"]
-  E --> J["C or Python component"]
-  J --> C
-  T["Simulated nanosecond grid"] --> C
-  C --> F["Exact causal graph"]
-  E --> F
-  F --> G["Replay receipt"]
-  H["Seeded entropy ledger"] --> C
-  H --> F
-  I["Local model or program"] --> K["Proposal admission"]
-  K --> C
-  K --> F
-  L["SECDED checkpoint"] --> C
-  C --> L
-  C --> P["Optional spike-gated Pauli X Y Z"]
-  P --> Q["Five simulated qubits in a stabilizer tableau"]
-  Q --> R["Four-sign syndrome and correction"]
-  R --> S["Next-tick feedback current"]
-  S --> C
-  C --> W["Optional encoded weight bits"]
-  W --> V["Separate five-qubit codeword tableaus"]
-  V --> X["Logical-Z readout and Fortran checks"]
-  X --> Y["Atomic weight restoration"]
-  Y --> C
-  Q --> F
-  V --> F
-  G --> M["Finite intervention search"]
-  M --> N["Interaction measurements and graphs"]
-  M --> O["Compiled stimulus protocol"]
-  O --> C
+  entry["neuromantle reads one scenario"] --> choose["Choose run .nm or world-run .nmw"]
+  choose --> net_init[".nm parses neurons, edges, features and stimuli"]
+  choose --> world_init[".nmw parses neurons, fields, rules and stimuli"]
+  net_init --> net_setup["Optional certificate, encoded weights and SECDED setup"]
+  world_init --> world_setup["Certified case checks certificate and prepares encoded logical zero"]
+  net_setup --> tick["Begin a tick in the selected mode"]
+  world_setup --> tick
+  tick --> net_before[".nm restores SECDED, applies declared faults, measures ancilla and restores weights"]
+  tick --> world_before[".nmw stages field sensors and scheduled input"]
+  net_before --> net_input[".nm injects scheduled stimuli and seeded noise"]
+  net_input --> core["Shared C11 nm_step runs LIF, delays and STDP"]
+  world_before --> core
+  core --> selected["Continue only the selected mode"]
+  selected --> net_audit[".nm audits STDP and updates router weights"]
+  net_audit --> net_route["Route spikes and queue optional module current"]
+  net_route --> net_capture["Record state root and recapture enabled weight and SECDED data"]
+  selected --> world_flux[".nmw computes conservative field flux and runs spike rules"]
+  world_flux --> world_code["Q rule measures three rounds through ancilla, then corrects the world tableau"]
+  world_code --> world_commit["Nonzero syndrome queues next-tick current; commit world state"]
+  net_capture --> tick_record["Append tick record, causal event and entropy root"]
+  world_commit --> tick_record
+  tick_record --> remaining["Check declared tick count"]
+  remaining --> repeat["If more ticks remain, repeat this mode"]
+  repeat --> tick
+  remaining --> finish["After the final tick, close this mode"]
+  finish --> net_final[".nm appends causal, entropy and receipt roots"]
+  finish --> world_final[".nmw appends causal, field entropy, quantum entropy and receipt roots"]
+  net_final --> net_write["Atomically write network receipt"]
+  world_final --> world_write["Atomically write world receipt and admitted SVG"]
+  net_write --> complete["Run returns with its output complete"]
+  world_write --> complete
+  complete --> optional_verify["Optional later verification command"]
+  optional_verify --> net_verify["verify reruns .nm and compares receipt bytes"]
+  optional_verify --> world_verify["world-verify reruns .nmw and compares receipt plus SVG bytes"]
+  net_verify --> verdict["Exact match passes; mismatch is rejected"]
+  world_verify --> verdict
 ```
 
-The two tableau branches have distinct roles. The spike-gated branch is a
-software five-qubit feedback experiment. The encoded-weight branch is an
-optional software memory-recovery mode. Both are recorded in replay receipts;
-neither connects to a physical quantum processor.
+The diagram follows a command **from input through its final output**. It is one executable with one shared C11 neuron-step implementation. The command chooses one scenario mode for the run, so the branches describe alternate uses of that implementation, not simultaneous activity or a shared live tableau. Both certified modes use the five-qubit code and certificate checks, but they create distinct tableau state. Each tick appends a mode-specific causal record. A rejected input or transition instead produces a refusal receipt; `world-run` does not write an SVG for a refusal. `verify` and `world-verify` are separate commands invoked after a run, not automatic parts of it.
+
+In a certified `.nmw` `world-run`, one encoded five-qubit tableau belongs to the coupled world. A configured spike can gate an X, Y or Z fault and a `Q` rule on that same tableau. Each `Q` measurement executes three rounds of four generator measurements through a resettable sixth simulated ancilla. A single declared classical readout flip can be tested with `qreadout_flip`. Majority readout identifies and corrects at most one declared data fault and, on nonzero syndrome, queues current for the next world tick. This checks the feedback tableau; it does not restore synaptic weights.
+
+In an ordinary `.nm` `run` with `qmemory weights5`, each bit of each configured 32-bit synaptic weight has its own simulated five-qubit codeword. Before a network step, scheduled `qfault` operations affect those codewords. The C correction measures the stabilizers through an ancilla and, for faulted cells, measures logical Z through that ancilla. The decoder reconstructs the bit without consulting a stored expected weight bit; the caller checks the complete corrected tableau against the decoded canonical codeword before committing restored weights. After LIF and STDP, changed weights are encoded again. This checks modeled weight data; its correction does not create feedback current. The scenario formats, receipts and verification commands differ by mode. SECDED is separate, and neither mode uses a physical quantum processor.
 
 The C hot path calculates every neuron transition, delayed delivery and plasticity update. A single ordered scheduler makes simultaneous spikes deterministic. Exact rational arithmetic checks candidate plasticity transitions in ten-tick batches, and incremental SHA-256 state roots, a causal graph and a seeded entropy ledger form the receipt path. Routing and spatial search use the supplied NeuroRoute code. A weighted route can invoke a bound C or Python executable and inject its computed current on the next tick. Every tick records before/after roots, spike routing, module output, causal parent and entropy root. A refusal also has a replayable receipt.
 
 ## Build and use
 
-Requires a C11 compiler, a C++23 compiler, a Fortran 2008 compiler such as gfortran, Python 3 and Make. On Linux x86-64, the bundled Vanta and Surreal command tools can also run.
+Requires a C11 compiler, a C++23 compiler, Python 3 and Make. The integer decoder builds from its Fortran 2008 implementation when a Fortran compiler is available; otherwise the same ABI is implemented by the C11 backend. On Linux x86-64, the bundled Vanta and Surreal command tools can also run.
 
 Start with the [step-by-step guide](docs/GETTING_STARTED.md). The [C API reference](docs/C_API.md), [command and process ABI](docs/API_ABI.md), and [system interface map](docs/SYSTEM_INTERFACE.md) describe the public functions, executable contracts and operating system interactions.
 
@@ -87,14 +102,40 @@ A local model can propose bounded stimuli through an executable adapter. `ai-run
 
 An optional software SECDED checkpoint corrects one flipped bit per encoded word and detects two. A separate admission gate verifies a supplied five-qubit QECC certificate with Surreal. [ECC semantics and runnable example](docs/ECC.md) distinguish classical state protection from the quantum-code proof.
 
+## 0.4.7: executable ancilla extraction and snapshot-free readout
+
+The five-qubit recovery path now executes a six-qubit Clifford circuit instead
+of taking generator signs directly from the data tableau: it rotates X terms,
+couples each generator to a resettable ancilla, measures the ancilla, and
+repeats the four generators three times. A single declared readout flip in
+one of the twelve measurements is resolved by a majority vote and is recorded
+in the world receipt. The corrected tableau is committed only after a clean
+post-correction circuit read. An independent 64-amplitude statevector oracle
+checks the full circuit on both encoded logical basis states and all fifteen
+single-qubit Pauli faults.
+
+Encoded synaptic memory no longer keeps an expected weight-bit snapshot for
+recovery. The syndrome plus an ancilla logical-Z readout determine each
+faulted bit; the canonical corrected tableau must agree before the network
+weight commits. A change-only capture recodes weights modified by STDP.
+The model still assumes at most one declared physical Pauli fault per codeword,
+one flipped classical readout in its experiment, intact classical host
+storage, and logical basis states for weights. It is not a hardware noise
+result or a general fault-tolerant circuit. See the exact
+[circuit and recovery contract](docs/READOUT_ENTROPY.md).
+
+```sh
+./bin/neuromantle world-run examples/coupled_five_readout_flip.nmw evidence/qecc_readout/run.receipt evidence/qecc_readout/dynamics.svg
+./bin/neuromantle world-verify examples/coupled_five_readout_flip.nmw evidence/qecc_readout/run.receipt evidence/qecc_readout/dynamics.svg
+python3 tests/five_circuit_oracle.py
+```
+
 ## 0.4.6.3: bounded readout decoding and replayable OS seed
 
-The active fault-recovery path now sends the four-bit syndrome and raw
-logical-Z observation to a compiled Fortran decoder. Its unique Pauli lookup
-recovers the logical bit under the stated one-fault bound, checks a separate
-snapshot of the intended synaptic weight bit, and agrees with the corrected
-C tableau before any weight is committed. Clean restorations retain their
-existing path. The new `seed-from-os` command materializes one Linux
+That release sent four tableau signs and a raw logical-Z observation to a
+compiled Fortran decoder and compared its output with a retained expected-bit
+snapshot. Version 0.4.7 supersedes that recovery path. The `seed-from-os`
+command from 0.4.6.3 materializes one Linux
 `getrandom()` sample into a scenario; ordinary `run` and `verify` then replay
 seeded Philox draws. [Readout and entropy contract](docs/READOUT_ENTROPY.md).
 Neither path connects to a physical quantum device. A measured hardware
@@ -114,7 +155,8 @@ as future proof and symbolic tools; this release makes no untested proof or
 performance claim for them. [Measured Fortran kernel and other language
 choices](docs/QMEMORY_KERNEL.md) include the measured canonical clean path,
 an optional ISPC classifier experiment that was slower on this tableau layout,
-and the raw comparison methods. The active Fortran decoder is retained.
+and the raw comparison methods. The Fortran implementation remains the
+selected decoder on hosts with a Fortran compiler.
 
 ![Recorded encoded memory corrections](evidence/qmemory/dynamics.svg)
 

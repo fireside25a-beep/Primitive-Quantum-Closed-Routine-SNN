@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.4.7 live observer packaging
+
+Added a separate browser viewer and best-effort nonblocking per-tick telemetry,
+with actual topology and spike animations generated from replay-verified receipts.
+The core simulation and existing receipt format are unchanged. The observer
+records drops when the viewer cannot keep up and never substitutes generated spikes.
+
+## 0.4.7 simulated ancilla circuit and snapshot-free memory recovery
+
+The certified five-qubit path now simulates explicit generator extraction:
+one resettable sixth ancilla, basis rotations and CNOT couplings, three
+measurement rounds, a bounded single classical readout-flip experiment and
+a clean post-correction circuit read. A configured `qreadout_flip` enters the
+world scenario and receipt. A separate six-qubit statevector oracle checks
+both logical basis states and all single-qubit Pauli cases; all twelve
+readout locations are exercised through the actual world command and replay.
+
+QMemory no longer consults a stored expected-bit snapshot. Faulted cells use
+ancilla logical-Z and syndrome measurements; the selected Fortran or C11
+integer decoder reconstructs the bit and weight. Complete canonical tableau
+validation precedes the atomic network commit. The stored encoded-word copy
+was removed; STDP changes are re-encoded from the already collected pre-step
+weight vector. The circuit does not establish tolerance of gate faults or
+protection against arbitrary host-memory corruption, and no QPU was used.
+
 ## 0.4.6.3 finite readout decoder and OS seeded scenarios
 
 The active one-fault QMemory restore now calls a compiled Fortran 2008

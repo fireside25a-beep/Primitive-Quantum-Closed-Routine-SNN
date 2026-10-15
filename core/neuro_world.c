@@ -69,6 +69,9 @@ int nm_world_step(nm_world *w,const nm_world_input *input,nm_world_report *outpu
     if(input->stimulus_current &&
        nm_inject(next,input->stimulus_neuron,next->tick,input->stimulus_current))goto fail;
     if(nm_step(next,&result.spikes))goto fail;
+    for(unsigned i=0;i<w->rule_count;i++)if(input->readout_flip[i] &&
+        (w->rules[i].op!='Q'||input->readout_flip[i]>12u||
+         !has_spike(&result.spikes,w->rules[i].trigger)))goto fail;
     for(unsigned i=0;i<w->link_count;i++){
         nm_world_link e=w->links[i];
         uint64_t old_from=w->nodes[e.from].mass,old_to=w->nodes[e.to].mass;
@@ -105,7 +108,10 @@ int nm_world_step(nm_world *w,const nm_world_input *input,nm_world_report *outpu
             break;
           case 'Q':{
             unsigned syndrome=0,correction=0;
-            rc=pq_five_correct(&quantum,&syndrome,&correction);
+            unsigned flip=input->readout_flip[i];
+            rc=flip?pq_five_correct_readout(&quantum,(flip-1u)/4u,(flip-1u)%4u,
+                                            &syndrome,&correction):
+                    pq_five_correct(&quantum,&syndrome,&correction);
             if(rc)goto fail;
             result.syndromes[i]=(uint8_t)syndrome;
             result.corrections[i]=(uint8_t)correction;

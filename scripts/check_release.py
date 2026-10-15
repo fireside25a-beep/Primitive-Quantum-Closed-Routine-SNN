@@ -7,7 +7,7 @@ import sys
 import tempfile
 import zipfile
 
-PREFIX = "NeuroMantle-0.4.6.3-readout-decoder/"
+PREFIX = "NeuroMantle-0.4.7-live-observer/"
 archive = Path(sys.argv[1]).resolve(strict=True) if len(sys.argv) == 2 else None
 if archive is None:
     raise SystemExit("usage: python3 scripts/check_release.py ARCHIVE.zip")
@@ -56,6 +56,11 @@ with tempfile.TemporaryDirectory(prefix="neuro-core-release-") as tmp:
         return result.stdout
 
     run("make", "-j2", "test")
+    fortran_object = (root / "build/qmemory_decode.o").is_file()
+    c_object = (root / "build/qmemory_decode_c.o").is_file()
+    if fortran_object == c_object:
+        raise SystemExit("extracted build has no unambiguous QMemory decoder backend")
+    decoder_backend = "Fortran" if fortran_object else "C11"
     run("make", "-C", "vendor/devcli", "test")
     run("make", "vanta-check")
     run("make", "companions")
@@ -77,6 +82,8 @@ with tempfile.TemporaryDirectory(prefix="neuro-core-release-") as tmp:
             "evidence/coupled/" + receipt, "evidence/coupled/" + graph)
     run("bin/neuromantle", "world-verify", "examples/coupled_five_code.nmw",
         "evidence/qecc_coupled/run.receipt", "evidence/qecc_coupled/dynamics.svg")
+    run("bin/neuromantle", "world-verify", "examples/coupled_five_readout_flip.nmw",
+        "evidence/qecc_readout/run.receipt", "evidence/qecc_readout/dynamics.svg")
     run("bin/neuromantle", "verify", "examples/qmemory_weights.nm",
         "evidence/qmemory/run.receipt")
     graph = root / "evidence/qmemory/dynamics.svg"
@@ -94,4 +101,4 @@ with tempfile.TemporaryDirectory(prefix="neuro-core-release-") as tmp:
         raise SystemExit("five-qubit refusal changed on extracted replay")
     run("bin/neuromantle", "verify", "examples/ecc_refused.nm", "evidence/qecc/refused.receipt")
     run("bin/neuromantle", "surreal", "qec-verify", "examples/qecc/five_qubit.sqecc")
-    print(f"extracted release PASS: {len(manifest)} hashes, rebuilt tests, atlas, certified five-qubit world and encoded synaptic-memory receipt and graph")
+    print(f"extracted release PASS: {len(manifest)} hashes, {decoder_backend} decoder, rebuilt tests, atlas, certified five-qubit world and encoded synaptic-memory receipt and graph")

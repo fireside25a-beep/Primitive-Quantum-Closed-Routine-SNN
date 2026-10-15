@@ -1,0 +1,6 @@
+NMOBS1|0|0|begin|world|e3111087284b0f4ba207acbb4f324755daa91a850e608b850f41d5ec0216829d
+NMOBS1|1|0|tick|0|0|1|tick=0;time_ns=0;mass=100;target=20;flux=0;spikes=0;rules=3;measure=2:2:0;corrected=2;syndrome=1:8:1,;readout_flip=1:1:2;state=727b0b31b83171c414e35358750b4b84cec2d1df9f02c887e7e460ddfef64e35;entropy=626f138b113939807f4b457463b0e3456bf00bebb99054c8589ad32504174ba1;event=77fd4c36bb1b96e1b857bef723ec01aee4e48198933e389bbf733cb529357b20
+NMOBS1|2|0|tick|1|0|1|tick=1;time_ns=100000;mass=100;target=20;flux=0;spikes=1;rules=0;measure=0:0:0;corrected=0;syndrome=1:0:0,;state=5353650af7c0584162bb39d43bb82093d4f3cc1981bfbd7c920a27e4c97ba75c;entropy=626f138b113939807f4b457463b0e3456bf00bebb99054c8589ad32504174ba1;event=f508f23f175903d1772263903000db189a1f13106f84adfaf8b736a113a59c4e
+NMOBS1|3|0|tick|2|0|1|tick=2;time_ns=200000;mass=100;target=20;flux=0;spikes=;rules=0;measure=0:0:0;corrected=0;syndrome=1:0:0,;state=0bf7fa93b3260f82495e706a280e8f1232d7b3ceaedbd2c1d5480055c88cf9bf;entropy=626f138b113939807f4b457463b0e3456bf00bebb99054c8589ad32504174ba1;event=3758c516bb8131763b8948a4e0d9f3a38a9ede39caa3e8d6d0c4104eb0124ca5
+NMOBS1|4|0|end|receipt_root=db98a3cf28b1615b1bc897a7f7dfd43748c88cb4e46dac939adfb2afd80a8cbb
+

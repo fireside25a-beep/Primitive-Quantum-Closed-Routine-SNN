@@ -5,15 +5,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/* For the exact ordered five-qubit code, decode one four-sign syndrome and
- * logical-Z read bit per encoded weight bit. The caller supplies an independent
- * expected weight-bit snapshot and guarantees at most one Pauli fault per cell.
- * No outputs are authoritative unless status is zero. Status 1 means malformed
- * input, 2 means the recovered bit disagrees with the expected snapshot.
- * A syndrome alone cannot recover a logical bit or authenticate a device. */
+/* Decode four stabilizer readout signs and a raw logical-Z eigenvalue per
+ * encoded weight bit. The caller verifies the corrected tableau against the
+ * canonical codeword selected by the decoded bit before committing any data.
+ * The declared noise model permits at most one Pauli fault per codeword.
+ * No outputs are authoritative unless status is zero. */
 void nm_qmemory_decode_observed(const int8_t *syndromes,
                                 const int8_t *raw_logical,
-                                const int8_t *expected,
                                 size_t edge_count,
                                 int8_t *logical,
                                 int8_t *corrections,

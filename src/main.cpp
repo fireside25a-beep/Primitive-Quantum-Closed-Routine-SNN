@@ -7,6 +7,7 @@
 #include "state_tree.hpp"
 #include "qmemory.hpp"
 #include "world.hpp"
+#include "observer.hpp"
 #include "neuro.h"
 #include "mm/spatial_pool.h"
 #include "surreal/hash.hpp"
@@ -356,7 +357,10 @@ void audit_plasticity(const std::vector<PlasticityRecord> &records){
 }
 std::string execute(const std::string &data) {
     auto s=parse(data);surreal::EntropyLedger entropy(s.seed);surreal::CausalGraph graph;
-    std::string receipt="NEUROMANTLE_RECEIPT_V1\nscenario="+surreal::hex(surreal::sha256(data))+"\n";
+    nm_observer::Observer observer;
+    const auto scenario_digest=surreal::hex(surreal::sha256(data));
+    observer.begin("network",scenario_digest);
+    std::string receipt="NEUROMANTLE_RECEIPT_V1\nscenario="+scenario_digest+"\n";
     if(s.clock_ns)receipt+="clock_ns="+std::to_string(s.clock_ns)+"\n";
     if(!s.qecc_path.empty()){
         auto verifier=(runtime_root/"vendor/surreal/upstream/bin/surreal-linux-x86_64").string();
@@ -460,7 +464,7 @@ std::string execute(const std::string &data) {
         auto after=state.root();
         std::string qmemory_root;
         if(qmemory){
-            qmemory->capture(*s.net);
+            qmemory->capture_updated(*s.net,old_weights);
             qmemory_root=qmemory->root();
         }
         std::string ecc_hash;
@@ -475,6 +479,7 @@ std::string execute(const std::string &data) {
         event.entropy_root=entropy.root();
         if(!prior.empty())event.parents.push_back(prior);
         prior=graph.append(std::move(event));
+        const auto observer_offset=receipt.size();
         receipt+="tick="+std::to_string(tick);
         if(s.clock_ns)receipt+=";time_ns="+std::to_string(tick*s.clock_ns);
         receipt+=";spikes="+spike_ids+";modules="+module_outputs+
@@ -483,9 +488,11 @@ std::string execute(const std::string &data) {
         if(qmemory)receipt+=";qmemory="+qmemory_root+":"+
             std::to_string(quantum_corrected)+":"+fault_record;
         receipt+="\n";
+        observer.tick(tick,std::string_view(receipt).substr(observer_offset));
     }
     receipt+="causal_root="+graph.root_hash()+"\nentropy_root="+entropy.root()+"\n";
     receipt+="receipt_root="+surreal::hex(surreal::sha256(receipt))+"\n";
+    observer.finish(std::string_view(receipt).substr(receipt.rfind("receipt_root=")));
     return receipt;
 }
 std::string decide(const std::string &data){

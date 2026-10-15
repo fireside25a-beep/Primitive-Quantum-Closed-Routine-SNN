@@ -35,27 +35,32 @@ Weights::Weights(const nm_network &network):edges_(network.edge_count){
     if(!edges_||edges_>NM_MAX_EDGES)throw std::runtime_error("QMemory needs configured synapses");
     cells_.resize(edges_*32u);
     fault_count_.resize(cells_.size());
-    encoded_words_.resize(edges_);
     capture(network);
 }
-void Weights::capture(const nm_network &network){
-    if(network.edge_count!=edges_)throw std::runtime_error("QMemory edge count changed");
+void Weights::encode_edge(std::size_t edge,std::int32_t weight){
     pq_state zero{};
     if(pq_init_five_code(&zero))throw std::runtime_error("QMemory encoder failed");
     pq_state one=zero;
     for(unsigned q=0;q<5;q++)if(pq_pauli(&one,q,'X'))throw std::runtime_error("QMemory logical X failed");
+    std::uint32_t word=static_cast<std::uint32_t>(weight);
+    for(unsigned bit=0;bit<32;bit++){
+        const auto &codeword=((word>>bit)&1u)?one:zero;
+        std::memcpy(cells_[edge*32+bit].rows,codeword.rows,10*sizeof(pq_row));
+    }
+}
+void Weights::capture(const nm_network &network){
+    if(network.edge_count!=edges_)throw std::runtime_error("QMemory edge count changed");
     for(std::size_t edge=0;edge<edges_;edge++){
-        if(initialized_ && encoded_words_[edge]==network.edges[edge].weight)continue;
-        std::uint32_t word=static_cast<std::uint32_t>(network.edges[edge].weight);
-        for(unsigned bit=0;bit<32;bit++){
-            const auto &codeword=((word>>bit)&1u)?one:zero;
-            std::memcpy(cells_[edge*32+bit].rows,codeword.rows,10*sizeof(pq_row));
-        }
-        encoded_words_[edge]=network.edges[edge].weight;
+        encode_edge(edge,network.edges[edge].weight);
     }
     std::fill(fault_count_.begin(),fault_count_.end(),0);
     active_faults_=0;
-    initialized_=true;
+}
+void Weights::capture_updated(const nm_network &network,std::span<const std::int32_t> before){
+    if(network.edge_count!=edges_||before.size()!=edges_||active_faults_)
+        throw std::runtime_error("QMemory updated capture refused");
+    for(std::size_t edge=0;edge<edges_;edge++)
+        if(network.edges[edge].weight!=before[edge])encode_edge(edge,network.edges[edge].weight);
 }
 void Weights::fault(std::size_t edge,unsigned bit,unsigned qubit,char op){
     if(edge>=edges_||bit>=32||qubit>=5||(op!='X'&&op!='Y'&&op!='Z'))
@@ -76,11 +81,11 @@ unsigned Weights::restore(nm_network &network){
     std::vector<std::int8_t> logical(cells_.size());
     std::vector<std::int32_t> weights(edges_);
     const bool observed=active_faults_!=0;
-    std::vector<std::int8_t> syndromes,raw_logical,expected_bits,decoded,codes;
+    std::vector<std::int8_t> syndromes,raw_logical,decoded,codes;
     std::vector<std::uint8_t> scalar_codes;
     if(observed){
         syndromes.resize(cells_.size());raw_logical.resize(cells_.size());
-        expected_bits.resize(cells_.size());decoded.resize(cells_.size());
+        decoded.resize(cells_.size());
         codes.resize(cells_.size());scalar_codes.resize(cells_.size());
     }
     pq_state zero{},one{};
@@ -89,22 +94,24 @@ unsigned Weights::restore(nm_network &network){
     for(unsigned q=0;q<5;q++)if(pq_pauli(&one,q,'X'))throw std::runtime_error("QMemory logical X failed");
     unsigned corrected=0;
     for(std::size_t i=0;i<cells_.size();i++){
-        const unsigned expected_bit=(static_cast<std::uint32_t>(encoded_words_[i/32])>>(i%32))&1u;
-        const auto &expected=expected_bit?one:zero;
-        if(observed)expected_bits[i]=static_cast<std::int8_t>(expected_bit);
+        const auto &raw=cells_[i].rows[9];
+        if(raw.x||raw.z!=31u||(raw.phase!=0&&raw.phase!=2))
+            throw std::runtime_error("QMemory malformed raw logical observation");
+        const auto raw_bit=static_cast<std::int8_t>(raw.phase>>1);
+        if(observed)raw_logical[i]=raw_bit;
         if(!fault_count_[i]){
+            const auto &expected=raw_bit?one:zero;
             if(std::memcmp(cells_[i].rows,expected.rows,10*sizeof(pq_row)))
                 throw std::runtime_error("QMemory undeclared tableau change refused");
-            logical[i]=static_cast<std::int8_t>(expected_bit);
-            if(observed)raw_logical[i]=logical[i];
+            logical[i]=raw_bit;
             continue;
         }
         pq_state cell{};cell.n=5;
         std::memcpy(cell.rows,cells_[i].rows,10*sizeof(pq_row));
-        const auto &raw=cell.rows[9];
-        if(raw.x||raw.z!=31u||(raw.phase!=0&&raw.phase!=2))
-            throw std::runtime_error("QMemory malformed raw logical observation");
-        raw_logical[i]=static_cast<std::int8_t>(raw.phase>>1);
+        unsigned circuit_bit=0;
+        if(pq_five_logical_z_circuit(&cell,&circuit_bit)||circuit_bit!=static_cast<unsigned>(raw_bit))
+            throw std::runtime_error("QMemory ancilla logical readout refused");
+        raw_logical[i]=static_cast<std::int8_t>(circuit_bit);
         unsigned syndrome=0,code=0;
         if(pq_five_correct(&cell,&syndrome,&code))throw std::runtime_error("QMemory syndrome refused");
         syndromes[i]=static_cast<std::int8_t>(syndrome);
@@ -126,7 +133,7 @@ unsigned Weights::restore(nm_network &network){
     int status=0;
     if(observed){
         nm_qmemory_decode_observed(syndromes.data(),raw_logical.data(),
-                                   expected_bits.data(),edges_,decoded.data(),
+                                   edges_,decoded.data(),
                                    codes.data(),weights.data(),&status);
         if(!status)for(std::size_t i=0;i<cells_.size();i++)
             if(decoded[i]!=logical[i] || static_cast<std::uint8_t>(codes[i])!=scalar_codes[i])

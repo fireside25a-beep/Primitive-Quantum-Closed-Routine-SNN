@@ -21,37 +21,37 @@ int main(){
             observed[target_bit]=syndrome[qubit][op];
             if(op!=2)raw[target_bit]^=1; // X and Y anticommute with ZZZZZ
             std::int32_t recovered=0;int status=-1;
-            nm_qmemory_decode_observed(observed.data(),raw.data(),expected.data(),1,
+            nm_qmemory_decode_observed(observed.data(),raw.data(),1,
                                        decoded.data(),codes.data(),&recovered,&status);
             assert(status==0 && recovered==word && decoded==expected);
             const unsigned code=3*qubit+(op==0?1u:op==2?2u:3u);
             assert(static_cast<unsigned>(codes[target_bit])==code);
             for(unsigned bit=0;bit<32;bit++)if(bit!=target_bit)assert(codes[bit]==0);
             raw[target_bit]^=1;
-            nm_qmemory_decode_observed(observed.data(),raw.data(),expected.data(),1,
+            nm_qmemory_decode_observed(observed.data(),raw.data(),1,
                                        decoded.data(),codes.data(),&recovered,&status);
-            assert(status==2); // Independent expected weight bit refuses drift.
+            assert(status==0 && decoded[target_bit]!=expected[target_bit]);
+            // A raw bit changed independently of a tableau is detected by the
+            // C caller's canonical codeword check, not by this arithmetic kernel.
         }
-    std::array<std::int8_t,32> syndrome_bits{},raw{},expected{},decoded{},codes{};
+    std::array<std::int8_t,32> syndrome_bits{},raw{},decoded{},codes{};
     std::int32_t recovered=0;int status=-1;
     syndrome_bits[0]=16;
-    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),expected.data(),1,
+    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),1,
                                decoded.data(),codes.data(),&recovered,&status);
     assert(status==1);
     syndrome_bits[0]=-1;
-    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),expected.data(),1,
+    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),1,
                                decoded.data(),codes.data(),&recovered,&status);
     assert(status==1);
     syndrome_bits[0]=0;raw[0]=2;
-    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),expected.data(),1,
+    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),1,
                                decoded.data(),codes.data(),&recovered,&status);
     assert(status==1);
-    raw[0]=0;expected[0]=2;
-    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),expected.data(),1,
+    raw[0]=0;
+    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),0,
                                decoded.data(),codes.data(),&recovered,&status);
     assert(status==1);
-    expected[0]=0;
-    nm_qmemory_decode_observed(syndrome_bits.data(),raw.data(),expected.data(),0,
-                               decoded.data(),codes.data(),&recovered,&status);
+    nm_qmemory_decode(raw.data(),0,&recovered,&status);
     assert(status==1);
 }

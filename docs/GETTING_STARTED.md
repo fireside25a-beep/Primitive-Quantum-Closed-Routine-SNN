@@ -2,7 +2,7 @@
 
 For the new coupled SNN, field and PrimitiveQ release, build with `make -j2 all` and execute `./bin/neuromantle world-run examples/coupled_world.nmw run.receipt dynamics.svg`. Replay it with `./bin/neuromantle world-verify examples/coupled_world.nmw run.receipt dynamics.svg`. The analogous `world-improve`/`world-improve-verify` and `world-interaction`/`world-interaction-verify` commands produce the native search and full eight-subset pulse experiment. [Semantics and exact commands](PRIMITIVEQ_WORLD.md) describe each layer. Earlier `.nm` scenario semantics remain available.
 
-Run these commands from the repository root. The native network needs a C11 compiler, a C++23 compiler, a Fortran 2008 compiler such as gfortran, Python 3 and Make. The bundled Surreal and direct Vanta executables run on Linux x86-64. The C network and its software checkpoint can be rebuilt from source on another target; the five-qubit certificate gate needs the bundled verifier.
+Run these commands from the repository root. The native network needs a C11 compiler, a C++23 compiler, Python 3 and Make. A Fortran 2008 compiler selects the Fortran integer decoder; otherwise an equivalent C11 implementation is compiled. The bundled Surreal and direct Vanta executables run on Linux x86-64. The C network and its software checkpoint can be rebuilt from source on another target; the five-qubit certificate gate needs the bundled verifier.
 
 ## Build and inspect a run
 
@@ -68,11 +68,11 @@ validation and holdout cases. Its real receipts and graphs are in
 `evidence/coupled/`.
 
 The release ZIP is checked with `python3 scripts/check_release.py
-NeuroMantle-0.4.6.3-readout-decoder.zip`; this extracts, rebuilds, tests and
+NeuroMantle-0.4.7-circuit-readout.zip`; this extracts, rebuilds, tests and
 replays the included current receipts and graphs.
 
 Run `examples/qmemory_weights.nm` to exercise encoded synaptic weight bits.
-The admitted code, Fortran decoding and single-fault recovery are in the
+The admitted code, selected integer decoding backend and single-fault recovery are in the
 ordinary network and receipt path. See [ECC](ECC.md) for the exact fault model.
 
 For the certified five-qubit SNN feedback run, use `./bin/neuromantle world-run examples/coupled_five_code.nmw evidence/qecc_coupled/run.receipt evidence/qecc_coupled/dynamics.svg` followed by the matching `world-verify` command. See [the encoded coupling contract](PRIMITIVEQ_WORLD.md).

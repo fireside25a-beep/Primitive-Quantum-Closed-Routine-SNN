@@ -16,6 +16,7 @@ latest executable.
 | 0.4.6.1 | Exact five-qubit certificate gate in the coupled transition, syndrome feedback to next-tick SNN current, independent 32-amplitude fault checks | [Certified coupling](PRIMITIVEQ_WORLD.md), [current receipt and graph](../evidence/qecc_coupled/) |
 | 0.4.6.2 | Optional encoded synaptic memory, atomic correction before the next tick and native Fortran weight reconstruction | [Fault model](ECC.md), [kernel measurements](QMEMORY_KERNEL.md), [run evidence](../evidence/qmemory/) |
 | 0.4.6.3 | Bounded Fortran syndrome and logical-Z readout on active correction, independent expected-bit check, tableau cross-check and materialized OS seed | [Readout semantics](READOUT_ENTROPY.md), [validation record](../evidence/READOUT_0463_RESULTS.md) |
+| 0.4.7 | Simulated six-qubit ancilla extraction with three syndrome rounds and single readout-flip tests; snapshot-free weight decode and canonical correction check | [Circuit contract](READOUT_ENTROPY.md), [independent oracle](../tests/five_circuit_oracle.py) |
 
 The [current test matrix](TEST_MATRIX.md) and [release checker](NIGHTLY_RELEASE.md)
 apply to this source snapshot. The earlier external evaluation records are

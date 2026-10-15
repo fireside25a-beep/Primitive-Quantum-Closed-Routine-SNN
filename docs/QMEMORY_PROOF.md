@@ -35,14 +35,14 @@ restored tableau, not only the syndrome bits.
 
 Each signed 32-bit synaptic weight is represented by 32 independent codewords.
 The clean decoder extracts their logical Z signs as digits `0` or `1`. The
-Fortran routine refuses any other digit and reconstructs the same 32-bit
+integer routine refuses any other digit and reconstructs the same 32-bit
 pattern by setting bit `b` exactly when digit `b` is one. For a declared
-fault, a separate active Fortran entry point takes the pre-correction
-logical-Z sign and four stabilizer signs, applies the unique single-Pauli
-logical flip, and checks the recovered bit against the separately maintained
-encoded-word snapshot. The C++ tableau independently computes the correction
-and full canonical codeword, then compares the Fortran result before commit.
-The Fortran result is staged in a
+fault, the decoder takes the pre-correction logical-Z ancilla observation
+and four ancilla-extracted stabilizer signs and applies the unique single-Pauli
+logical flip. It does not need a separately maintained expected-bit snapshot.
+The C++ tableau independently computes the correction and requires the full
+canonical codeword selected by the recovered bit before commit.
+The decoded vector is staged in a
 separate vector, then applied to all synapses only after every logical block
 passes. A changed STDP weight is encoded back into these same canonical
 codewords after the neural tick. The CLI unit and integration tests exercise
@@ -50,7 +50,7 @@ negative bit patterns, an STDP change, all 15 physical Pauli faults,
 multiple-fault refusal, complete receipt replay and mutation refusal.
 
 This finite argument does **not** establish correctness for arbitrary
-multi-qubit faults, faulty syndrome measurements, quantum hardware, memory
+multi-qubit faults, faults within syndrome gates, quantum hardware, memory
 outside synaptic weights, every reachable generic Clifford tableau, or all
 behavior of the C/C++/Fortran executable. It is neither a GNATprove/SPARK
 certificate nor a theorem about error-free host RAM. A physical implementation

@@ -1,13 +1,16 @@
 # Native kernel choice and measured scope
 
-The 0.4.6.2 synaptic memory mode uses C11 for fixed-point neurons and the
+The original 0.4.6.2 synaptic memory mode used C11 for fixed-point neurons and the
 five-qubit stabilizer tableau, C++23 for bounded scenario admission and
 receipts, and a compiled Fortran 2008 `ISO_C_BINDING` routine for signed
 vector reconstruction from recovered logical bits. This is a production
 cross-language call in every enabled network tick, not a standalone example.
-The binary contains the Fortran object; this integer-only routine has no
-external Fortran runtime call on the measured host. The build requires a
-Fortran compiler. C and C++ are still needed for the existing runtime.
+The archived measured binary contained the Fortran object. In 0.4.7, the
+build selects that implementation when a Fortran compiler exists, or the
+same complete integer decoder ABI implemented in C11 otherwise. The
+two implementations are separate executable backends, not mixed in a run.
+The archived Fortran timing results below are historical and do not describe
+the selected backend or the new ancilla circuit on a different host.
 
 ## Isolated kernel measurement
 
@@ -86,6 +89,16 @@ clean-path timing table is not a new end-to-end benchmark of this change.
 The new isolated clean samples are in
 [`READOUT_RESTORE_0463_RAW.csv`](../evidence/qmemory/READOUT_RESTORE_0463_RAW.csv);
 no acceleration claim is made from them.
+
+In 0.4.7, the expected-bit argument and retained encoded-word snapshot are
+removed from the active decoder. A sixth simulated qubit performs explicit
+ancilla syndrome extraction and logical-Z readout on faulted codewords. The
+decoder reconstructs a bit from that observation; C++ checks its correction
+index and requires a complete canonical tableau before committing weights.
+Only weights changed by the network transition are re-encoded, using the
+pre-step weight vector already needed for plasticity auditing. The clean
+restore benchmark above predates this release; no speedup is claimed for the
+new circuit.
 Optional `bench-ispc` needs ISPC and an AVX2-capable x86-64 CPU; ordinary
 builds do not require either.
 
