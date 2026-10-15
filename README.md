@@ -4,51 +4,55 @@ NeuroMantle 0.4.6.3 · deterministic spiking network and replayable software qua
 
 Version License Core Model Replay
 
-A deterministic spiking network with a C11 simulation core, weighted routing and 1024-bit similarity input, backed by exact causal event records and seeded entropy. Spikes can drive a five-qubit stabilizer simulation, whose syndrome and correction feed current back to the network on the next tick. An optional separate mode encodes synaptic-weight bits in simulated five-qubit codewords and checks restoration before a network step. The command also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through separate, explicit entry points.
+A deterministic spiking network with a C11 simulation core, weighted routing and 1024-bit similarity input, backed by exact causal event records and seeded entropy. One neuromantle executable drives both scenario formats through the same C11 neuron-step function. With a .nmw scenario, configured spikes can trigger correction of a simulated five-qubit state and queue feedback current. With a .nm scenario and qmemory weights5, the same SNN core runs after encoded synaptic-weight bits are checked and restored. These modes use the same five-qubit code routines, but each run owns its network and tableau state. The executable also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through explicit commands.
 
 The top-level Apache-2.0 license covers NeuroMantle’s original code. Each bundled companion keeps its own license in vendor/.
 
 For the sequence of validated changes and the evidence behind each stage, start with Development path. The test matrix identifies executable checks for this snapshot; evidence index separates current replay artifacts from earlier control and training evaluations.
 
 flowchart TD
-  A["Scenario and feature events"] --> B["1024-bit spatial selection"]
-  B --> C["Fixed-point LIF network"]
-  C --> D["Delayed synapses and STDP"]
-  D --> E["Weighted route selection"]
-  E --> J["C or Python component"]
-  J --> C
-  T["Simulated nanosecond grid"] --> C
-  C --> F["Exact causal graph"]
-  E --> F
-  F --> G["Replay receipt"]
-  H["Seeded entropy ledger"] --> C
-  H --> F
-  I["Local model or program"] --> K["Proposal admission"]
-  K --> C
-  K --> F
-  L["SECDED checkpoint"] --> C
-  C --> L
-  C --> P["Optional spike-gated Pauli X Y Z"]
-  P --> Q["Five simulated qubits in a stabilizer tableau"]
-  Q --> R["Four-sign syndrome and correction"]
-  R --> S["Next-tick feedback current"]
-  S --> C
-  C --> W["Optional encoded weight bits"]
-  W --> V["Separate five-qubit codeword tableaus"]
-  V --> X["Logical-Z readout and Fortran checks"]
-  X --> Y["Atomic weight restoration"]
-  Y --> C
-  Q --> F
-  V --> F
-  G --> M["Finite intervention search"]
-  M --> N["Interaction measurements and graphs"]
-  M --> O["Compiled stimulus protocol"]
-  O --> C
+  entry["neuromantle reads one scenario"] --> choose["Choose run .nm or world-run .nmw"]
+  choose --> net_init[".nm parses neurons, edges, features and stimuli"]
+  choose --> world_init[".nmw parses neurons, fields, rules and stimuli"]
+  net_init --> net_setup["Optional certificate, encoded weights and SECDED setup"]
+  world_init --> world_setup["Certified case checks certificate and prepares encoded logical zero"]
+  net_setup --> tick["Begin a tick in the selected mode"]
+  world_setup --> tick
+  tick --> net_before[".nm restores SECDED, applies declared faults and restores weights"]
+  tick --> world_before[".nmw stages field sensors and scheduled input"]
+  net_before --> net_input[".nm injects scheduled stimuli and seeded noise"]
+  net_input --> core["Shared C11 nm_step runs LIF, delays and STDP"]
+  world_before --> core
+  core --> selected["Continue only the selected mode"]
+  selected --> net_audit[".nm audits STDP and updates router weights"]
+  net_audit --> net_route["Route spikes and queue optional module current"]
+  net_route --> net_capture["Record state root and recapture enabled weight and SECDED data"]
+  selected --> world_flux[".nmw computes conservative field flux and runs spike rules"]
+  world_flux --> world_code["Declared Pauli faults and Q syndrome correction use the world tableau"]
+  world_code --> world_commit["Nonzero syndrome queues next-tick current; commit world state"]
+  net_capture --> tick_record["Append tick record, causal event and entropy root"]
+  world_commit --> tick_record
+  tick_record --> remaining["Check declared tick count"]
+  remaining --> repeat["If more ticks remain, repeat this mode"]
+  repeat --> tick
+  remaining --> finish["After the final tick, close this mode"]
+  finish --> net_final[".nm appends causal, entropy and receipt roots"]
+  finish --> world_final[".nmw appends causal, field entropy, quantum entropy and receipt roots"]
+  net_final --> net_write["Atomically write network receipt"]
+  world_final --> world_write["Atomically write world receipt and admitted SVG"]
+  net_write --> complete["Run returns with its output complete"]
+  world_write --> complete
+  complete --> optional_verify["Optional later verification command"]
+  optional_verify --> net_verify["verify reruns .nm and compares receipt bytes"]
+  optional_verify --> world_verify["world-verify reruns .nmw and compares receipt plus SVG bytes"]
+  net_verify --> verdict["Exact match passes; mismatch is rejected"]
+  world_verify --> verdict
 
-The two tableau branches have distinct roles. The spike-gated branch is a
-software five-qubit feedback experiment. The encoded-weight branch is an
-optional software memory-recovery mode. Both are recorded in replay receipts;
-neither connects to a physical quantum processor.
+The diagram follows a command from input through its final output. It is one executable with one shared C11 neuron-step implementation. The command chooses one scenario mode for the run, so the branches describe alternate uses of that implementation, not simultaneous activity or a shared live tableau. Both certified modes use the five-qubit code and certificate checks, but they create distinct tableau state. Each tick appends a mode-specific causal record. A rejected input or transition instead produces a refusal receipt; world-run does not write an SVG for a refusal. verify and world-verify are separate commands invoked after a run, not automatic parts of it.
+
+In a certified .nmw world-run, one encoded five-qubit tableau belongs to the coupled world. A configured spike can gate an X, Y or Z fault and a Q rule on that same tableau. The C correction reads four stabilizer signs, corrects at most one declared fault and, only for a nonzero syndrome, queues current for the next world tick. This checks the feedback tableau; it does not restore synaptic weights.
+
+In an ordinary .nm run with qmemory weights5, each bit of each configured 32-bit synaptic weight has its own simulated five-qubit codeword. Before a network step, scheduled qfault operations affect those codewords. The C tableau correction and raw logical-Z result feed a Fortran decoder, which checks the separately stored expected weight bits; corrected codewords must match their canonical states before all restored weights are committed. After the LIF and STDP step, changed weights are encoded again. This checks and restores modeled weight data; its correction does not create feedback current. The scenario formats, receipts and verification commands differ by mode. The SECDED checkpoint is separate, and neither mode uses a physical quantum processor.
 
 The C hot path calculates every neuron transition, delayed delivery and plasticity update. A single ordered scheduler makes simultaneous spikes deterministic. Exact rational arithmetic checks candidate plasticity transitions in ten-tick batches, and incremental SHA-256 state roots, a causal graph and a seeded entropy ledger form the receipt path. Routing and spatial search use the supplied NeuroRoute code. A weighted route can invoke a bound C or Python executable and inject its computed current on the next tick. Every tick records before/after roots, spike routing, module output, causal parent and entropy root. A refusal also has a replayable receipt.
 
