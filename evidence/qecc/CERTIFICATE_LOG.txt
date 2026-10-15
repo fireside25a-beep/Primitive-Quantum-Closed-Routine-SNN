@@ -1,0 +1,10 @@
+SURREAL_QECC_PROOF_V1
+valid:1:1
+qubits:1:5
+stabilizer_rank:1:4
+logical_qubits:1:1
+distance_lower_bound:1:3
+distance_upper_bound:1:3
+distinct_single_error_syndromes:2:15
+code_root:64:fa8f60cc8958dd323dadf2951cf76a39cfef0749457728916732c9591fc564cc
+reason:63:certified_[[n,1,3]]_nondegenerate_single_qubit_Pauli_correction

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030 695">
+<rect width="1030" height="695" fill="#101827"/>
+<text x="25" y="35" fill="white" font-size="22">Ninja held-out play | historical and full-action motor heads</text>
+<text x="25" y="62" fill="#b9cce1" font-size="13">Real Procgen episodes; completions, not frame counts. Aliased IDs have the same in-game effect.</text>
+<text x="25" y="99" fill="#f6faff" font-size="14">Original four-action head | easy | baseline: 3/8</text>
+<rect x="770" y="83" width="78.8" height="20" fill="#8faacc"/>
+<rect x="770" y="83" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="145" fill="#f6faff" font-size="14">Original four-action head | easy | trained: 3/8</text>
+<rect x="770" y="129" width="78.8" height="20" fill="#8faacc"/>
+<rect x="770" y="129" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="191" fill="#f6faff" font-size="14">Original four-action head | hard | baseline: 0/4</text>
+<rect x="770" y="175" width="0.0" height="20" fill="#8faacc"/>
+<rect x="770" y="175" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="237" fill="#f6faff" font-size="14">Original four-action head | hard | trained: 0/4</text>
+<rect x="770" y="221" width="0.0" height="20" fill="#8faacc"/>
+<rect x="770" y="221" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="283" fill="#f6faff" font-size="14">Full fifteen-ID head | easy | baseline: 3/8</text>
+<rect x="770" y="267" width="78.8" height="20" fill="#58d2ac"/>
+<rect x="770" y="267" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="329" fill="#f6faff" font-size="14">Full fifteen-ID head | easy | trained: 3/8</text>
+<rect x="770" y="313" width="78.8" height="20" fill="#58d2ac"/>
+<rect x="770" y="313" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="375" fill="#f6faff" font-size="14">Full fifteen-ID head | hard | baseline: 0/4</text>
+<rect x="770" y="359" width="0.0" height="20" fill="#58d2ac"/>
+<rect x="770" y="359" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="421" fill="#f6faff" font-size="14">Full fifteen-ID head | hard | trained: 0/4</text>
+<rect x="770" y="405" width="0.0" height="20" fill="#58d2ac"/>
+<rect x="770" y="405" width="210" height="20" fill="none" stroke="#697d94"/>
+<text x="25" y="494" fill="white" font-size="18">Observed action IDs in held-out episodes</text>
+<text x="25" y="517" fill="#b9cce1" font-size="13">Each stack uses the same eight easy and four hard levels. Exact counts in action_usage.svg.</text>
+<text x="25" y="660" fill="#b9cce1" font-size="13">Every Ninja ID is wired and reachable by a distinct motor spike; usage in these games is measured separately.</text>
+</svg>

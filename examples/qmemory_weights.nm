@@ -1,0 +1,11 @@
+# Encoded logical memory follows an STDP weight update, then corrects a fault.
+neuron 0 0 10 65536 0
+neuron 1 0 10 65536 0
+edge 0 1 5 1 4 3 4 -20 20
+stim 0 0 10
+stim 1 1 10
+steps 4
+qecc_certificate examples/qecc/five_qubit.sqecc
+ecc secded72
+qmemory weights5
+qfault 2 0 3 3 Y

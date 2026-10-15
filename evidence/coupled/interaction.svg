@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="340" viewBox="0 0 900 340">
+<title>Eight executed pulse masks and exact third-order interaction</title>
+<rect width="900" height="340" fill="#101b2c"/>
+<text x="35" y="28" fill="white">Measured target mass under every three-pulse subset</text>
+<rect x="40" y="82" width="62" height="163" fill="#57d6af"/>
+<text x="40" y="267" fill="white">0</text>
+<rect x="145" y="70" width="62" height="175" fill="#57d6af"/>
+<text x="145" y="267" fill="white">1</text>
+<rect x="250" y="70" width="62" height="175" fill="#57d6af"/>
+<text x="250" y="267" fill="white">2</text>
+<rect x="355" y="61" width="62" height="184" fill="#57d6af"/>
+<text x="355" y="267" fill="white">3</text>
+<rect x="460" y="70" width="62" height="175" fill="#57d6af"/>
+<text x="460" y="267" fill="white">4</text>
+<rect x="565" y="61" width="62" height="184" fill="#57d6af"/>
+<text x="565" y="267" fill="white">5</text>
+<rect x="670" y="61" width="62" height="184" fill="#57d6af"/>
+<text x="670" y="267" fill="white">6</text>
+<rect x="775" y="55" width="62" height="190" fill="#57d6af"/>
+<text x="775" y="267" fill="white">7</text>
+<text x="35" y="298" fill="#f7bd67">third-order field difference: 3516; goal spike difference: 1</text>
+<text x="35" y="324" fill="#b7c9dc">receipt SHA-256: 5f517bf2d849b0e9d4cd9aa81c735fdd56a1a14050c299b76618b01c2f2ce0b9</text>
+</svg>

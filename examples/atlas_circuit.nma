@@ -1,0 +1,4 @@
+goal_ns evoke 4 200000 800000
+pulse_ns 100000 0 10
+pulse_ns 100000 1 10
+pulse_ns 100000 5 10

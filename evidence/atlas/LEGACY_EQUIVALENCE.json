@@ -1,0 +1,12 @@
+[
+  {
+    "scenario": "two_neuron.nm",
+    "same_bytes": true,
+    "sha256": "8754bdba4be8c789cee860f8ab04490bd7a3723ceec7a6ba3382ea8ccf7a0b18"
+  },
+  {
+    "scenario": "bio_clock.nm",
+    "same_bytes": true,
+    "sha256": "217641f69b38ca3a07f8089136f493ada922fd71887d7457fdea674bc56c17bb"
+  }
+]

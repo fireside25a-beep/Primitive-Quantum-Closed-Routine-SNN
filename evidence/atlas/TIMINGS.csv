@@ -1,0 +1,3 @@
+version,workload,candidate_singles,candidate_pairs,ticks_per_run,generation_seconds,independent_replay_seconds
+0.4.1,refractory,12,66,4,0.057636747,0.048885398
+0.4.1,circuit,3,3,10,0.009146584,0.009236900

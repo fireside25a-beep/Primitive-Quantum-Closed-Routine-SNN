@@ -1,0 +1,2 @@
+version,workload,generation_seconds,replay_seconds
+0.4.2,connect4-forced-block,0.010458376,0.009530001

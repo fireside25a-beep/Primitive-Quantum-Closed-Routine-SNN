@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 900 260">
+<title>Measured repeated 16-qubit syndrome benchmark in nanoseconds</title>
+<rect width="900" height="260" fill="#101b2c"/>
+<text x="20" y="28" fill="white">PrimitiveQ: 65,536 errors, 15 generators, 40 repetitions; one measured run</text>
+<text x="20" y="72" fill="white">scalar repeated</text>
+<rect x="245" y="55" width="278" height="23" fill="#f7bd67"/>
+<text x="533" y="73" fill="white">46,273,816 ns</text>
+<text x="20" y="137" fill="white">bitplane one-shot repeated</text>
+<rect x="245" y="120" width="440" height="23" fill="#de6f8a"/>
+<text x="695" y="138" fill="white">73,109,594 ns</text>
+<text x="20" y="202" fill="white">prepared incl. once</text>
+<rect x="245" y="185" width="157" height="23" fill="#57d6af"/>
+<text x="412" y="203" fill="white">26,065,687 ns</text>
+<text x="20" y="252" fill="#b7c9dc">Repeated prepared batch includes transposition once; no one-shot acceleration claimed.</text>
+</svg>

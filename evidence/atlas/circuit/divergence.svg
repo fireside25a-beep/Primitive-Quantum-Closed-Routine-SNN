@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="220" viewBox="0 0 1060 220" role="img" aria-label="State divergence by pulse and tick">
+<title>State divergence by pulse and tick</title><desc>Deterministic atlas root b9e0723e690a345b6685f840f755923af8568c1c2a84e1e1b6d598c254b39b41</desc>
+<rect width="100%" height="100%" fill="#101522"/>
+<text x="20" y="30" fill="#e5eaf2" font-family="monospace" font-size="18">NEUROMANTLE 0.4.1  |  RESPONSE ATLAS</text>
+<text x="20" y="54" fill="#e5eaf2" font-family="monospace" font-size="12">Each colored cell is a different committed network state.</text>
+<text x="20" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">pulse</text>
+<text x="250" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">tick 0</text>
+<text x="970" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">tick 9</text>
+<text x="20" y="106" fill="#e5eaf2" font-family="monospace" font-size="12">#0 n0 t1 I10</text>
+<rect x="250" y="92" width="76" height="20" fill="#273447"/>
+<rect x="326" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="402" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="478" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="554" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="630" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="706" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="782" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="858" y="92" width="76" height="20" fill="#40b8c9"/>
+<rect x="934" y="92" width="76" height="20" fill="#40b8c9"/>
+<text x="20" y="138" fill="#e5eaf2" font-family="monospace" font-size="12">#1 n1 t1 I10</text>
+<rect x="250" y="124" width="76" height="20" fill="#273447"/>
+<rect x="326" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="402" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="478" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="554" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="630" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="706" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="782" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="858" y="124" width="76" height="20" fill="#40b8c9"/>
+<rect x="934" y="124" width="76" height="20" fill="#40b8c9"/>
+<text x="20" y="170" fill="#e5eaf2" font-family="monospace" font-size="12">#2 n5 t1 I10</text>
+<rect x="250" y="156" width="76" height="20" fill="#273447"/>
+<rect x="326" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="402" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="478" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="554" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="630" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="706" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="782" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="858" y="156" width="76" height="20" fill="#40b8c9"/>
+<rect x="934" y="156" width="76" height="20" fill="#40b8c9"/>
+<text x="20" y="212" fill="#e5eaf2" font-family="monospace" font-size="11">teal: state differs   gold: spike goal met   root: b9e0723e690a345b</text>
+</svg>

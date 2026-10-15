@@ -1,0 +1,25 @@
+# Deterministic coupled SNN, conservative field, and a two-qubit Bell experiment.
+clock_ns 100000
+seed 4
+qubits 2
+steps 4
+neuron 0 0 10 0 0
+neuron 1 0 10 0 0
+edge 0 1 1 1 0 0 8 1 1
+field 800000 1000000 0 10
+field 200000 400000 1 10
+flux 0 1 0 1 8192 8192 800000 200000
+qrule 0 H 0 0 0 0
+qrule 0 C 0 1 0 0
+qrule 0 M 0 0 1 10
+stim 0 0 10
+pulse 0 0 10
+pulse 1 0 10
+pulse 2 0 10
+goal 1 1
+train_case 800000 200000 10
+train_case 700000 300000 10
+validation_case 750000 250000 10
+validation_case 900000 100000 10
+holdout_case 650000 350000 10
+holdout_case 850000 150000 10

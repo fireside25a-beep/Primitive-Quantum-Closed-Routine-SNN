@@ -1,0 +1,7 @@
+# Physical durations in simulated nanoseconds; one tick is 100 microseconds.
+clock_ns 100000
+bio_neuron 0 0 10 1000000 100000
+bio_neuron 1 0 5 1000000 0
+bio_edge 0 1 5 200000 2 1 400000 0 10
+bio_stim 100000 0 10
+duration_ns 1000000

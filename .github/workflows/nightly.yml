@@ -1,0 +1,36 @@
+name: NeuroMantle nightly 0.4.6.3
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  nightly:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - run: sudo apt-get update && sudo apt-get install -y build-essential gfortran python3 binutils
+      - run: make -j2 all
+      - run: make test
+      - run: make -C vendor/devcli test
+      - run: make vanta-check
+      - run: make companions
+      - run: make qecc-check
+      - run: ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 make sanitize
+      - run: make clean && make -j2 all
+      - run: ./bin/neuromantle world-run examples/coupled_world.nmw evidence/coupled/run.receipt evidence/coupled/dynamics.svg > /dev/null && ./bin/neuromantle world-improve examples/coupled_world.nmw evidence/coupled/improve.receipt evidence/coupled/improve.svg > /dev/null && ./bin/neuromantle world-interaction examples/coupled_world.nmw evidence/coupled/interaction.receipt evidence/coupled/interaction.svg > /dev/null && python3 tests/world_integration.py
+      - run: ./bin/neuromantle run examples/ecc.nm evidence/qecc/admitted.receipt && ./bin/neuromantle verify examples/ecc.nm evidence/qecc/admitted.receipt
+      - run: ./bin/neuromantle run examples/qmemory_weights.nm evidence/qmemory/run.receipt > evidence/qmemory/run.stdout && ./bin/neuromantle verify examples/qmemory_weights.nm evidence/qmemory/run.receipt > evidence/qmemory/verify.stdout && python3 scripts/plot_qmemory.py evidence/qmemory/run.receipt evidence/qmemory/dynamics.svg
+      - run: python3 scripts/package.py NeuroMantle-0.4.6.3-readout-decoder.zip
+      - run: python3 scripts/check_release.py NeuroMantle-0.4.6.3-readout-decoder.zip
+      - run: sha256sum NeuroMantle-0.4.6.3-readout-decoder.zip > NeuroMantle-0.4.6.3-readout-decoder.zip.sha256
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: NeuroMantle-0.4.6.3-readout-decoder
+          path: |
+            NeuroMantle-0.4.6.3-readout-decoder.zip
+            NeuroMantle-0.4.6.3-readout-decoder.zip.sha256
+          if-no-files-found: error
+          retention-days: 14

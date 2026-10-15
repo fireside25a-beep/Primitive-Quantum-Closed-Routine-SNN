@@ -1,0 +1,16 @@
+# Two excitatory pathways and one inhibitory pathway, with real delayed STDP.
+clock_ns 100000
+bio_neuron 0 0 10 1000000 100000
+bio_neuron 1 0 10 1000000 100000
+bio_neuron 2 0 5 1000000 100000
+bio_neuron 3 0 5 1000000 100000
+bio_neuron 4 0 5 1000000 100000
+bio_neuron 5 0 10 1000000 100000
+bio_edge 0 2 5 100000 1 1 400000 0 10
+bio_edge 1 3 5 100000 1 1 400000 0 10
+bio_edge 2 4 3 100000 1 1 400000 0 10
+bio_edge 3 4 3 100000 1 1 400000 0 10
+bio_edge 5 4 -6 200000 1 1 400000 -10 0
+seed 41
+bio_noise 0 2 1
+duration_ns 1000000

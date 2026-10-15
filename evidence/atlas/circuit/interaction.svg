@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="730" height="665" viewBox="0 0 730 665" role="img" aria-label="Paired pulse spike interaction matrix">
+<title>Paired pulse spike interaction matrix</title><desc>Deterministic atlas root b9e0723e690a345b6685f840f755923af8568c1c2a84e1e1b6d598c254b39b41</desc>
+<rect width="100%" height="100%" fill="#101522"/>
+<text x="20" y="30" fill="#e5eaf2" font-family="monospace" font-size="18">NEUROMANTLE 0.4.1  |  TWO-PULSE INTERACTIONS</text>
+<text x="20" y="52" fill="#e5eaf2" font-family="monospace" font-size="12">I = joint - A - B + baseline target spikes</text>
+<text x="164" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<text x="110" y="185" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<text x="334" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">1</text>
+<text x="110" y="355" fill="#e5eaf2" font-family="monospace" font-size="12">1</text>
+<text x="504" y="80" fill="#e5eaf2" font-family="monospace" font-size="12">2</text>
+<text x="110" y="525" fill="#e5eaf2" font-family="monospace" font-size="12">2</text>
+<rect x="314" y="90" width="167" height="167" fill="#277f78"/>
+<text x="319" y="180" fill="#e5eaf2" font-family="monospace" font-size="12">1</text>
+<rect x="144" y="260" width="167" height="167" fill="#277f78"/>
+<text x="149" y="350" fill="#e5eaf2" font-family="monospace" font-size="12">1</text>
+<rect x="484" y="90" width="167" height="167" fill="#314153"/>
+<text x="489" y="180" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<rect x="144" y="430" width="167" height="167" fill="#314153"/>
+<text x="149" y="520" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<rect x="484" y="260" width="167" height="167" fill="#314153"/>
+<text x="489" y="350" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<rect x="314" y="430" width="167" height="167" fill="#314153"/>
+<text x="319" y="520" fill="#e5eaf2" font-family="monospace" font-size="12">0</text>
+<text x="20" y="652" fill="#e5eaf2" font-family="monospace" font-size="11">green: positive   rose: negative   slate: zero   root: b9e0723e690a345b</text>
+</svg>

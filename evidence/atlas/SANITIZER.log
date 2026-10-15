@@ -1,0 +1,8 @@
+ASan + UBSan; detect_leaks=0 due host tracing restriction
+core dynamics, delayed delivery, LTP, LTD, refusal, transactional overflow: PASS
+SECDED word exhaustive single/double faults and atomic checkpoint restore: PASS
+biological grid arithmetic: PASS
+incremental Merkle root equals complete rebuild through 25 transitions: PASS
+biological clock integration: PASS
+paired intervention replay: PASS
+atlas search, monotonic witness, pair interactions, graph replay and refusal: PASS

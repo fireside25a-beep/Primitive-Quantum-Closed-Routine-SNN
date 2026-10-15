@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+<title>Measured spikes and five-qubit logical-memory corrections</title>
+<rect width="800" height="300" fill="#101b2c"/>
+<text x="60" y="32" fill="#e2eaf6" font-size="18">Encoded synaptic memory: recorded run</text>
+<path d="M 60 58 V 238 H 760" fill="none" stroke="#738ca6"/>
+<polyline points="60,58 293,58 526,238 760,238" fill="none" stroke="#76d2bc" stroke-width="2"/>
+<polyline points="60,238 293,238 526,58 760,238" fill="none" stroke="#eea54e" stroke-width="2"/>
+<circle cx="526" cy="58" r="5" fill="#eea54e"/>
+<text x="60" y="261" text-anchor="middle" fill="#c9d7e8" font-size="12">0</text><text x="293" y="261" text-anchor="middle" fill="#c9d7e8" font-size="12">1</text><text x="526" y="261" text-anchor="middle" fill="#c9d7e8" font-size="12">2</text><text x="760" y="261" text-anchor="middle" fill="#c9d7e8" font-size="12">3</text>
+<text x="60" y="286" fill="#76d2bc" font-size="13">Neural spikes</text>
+<text x="200" y="286" fill="#eea54e" font-size="13">Recovered logical blocks</text>
+</svg>

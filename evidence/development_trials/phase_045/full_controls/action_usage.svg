@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 830">
+<rect width="1080" height="830" fill="#101827"/>
+<text x="25" y="35" fill="white" font-size="22">Full action wiring | actual Ninja game choices</text>
+<text x="25" y="59" fill="#bbcee0" font-size="13">Old baseline+trained: blue; full-action baseline+trained: green. Counts are descriptive, not performance scores.</text>
+<text x="20" y="102" fill="#f6faff" font-size="13">00 left alias</text>
+<rect x="260" y="84" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="100" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="96" fill="#cad9e9" font-size="12">0 / 0</text>
+<text x="20" y="147" fill="#f6faff" font-size="13">01 left</text>
+<rect x="260" y="129" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="145" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="141" fill="#cad9e9" font-size="12">0 / 0</text>
+<text x="20" y="192" fill="#f6faff" font-size="13">02 left charge</text>
+<rect x="260" y="174" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="190" width="25.4" height="13" fill="#58d2ac"/>
+<text x="908" y="186" fill="#cad9e9" font-size="12">0 / 30</text>
+<text x="20" y="237" fill="#f6faff" font-size="13">03 stand alias</text>
+<rect x="260" y="219" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="235" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="231" fill="#cad9e9" font-size="12">0 / 0</text>
+<text x="20" y="282" fill="#f6faff" font-size="13">04 stand</text>
+<rect x="260" y="264" width="569.0" height="13" fill="#8faacc"/>
+<rect x="260" y="280" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="276" fill="#cad9e9" font-size="12">671 / 1</text>
+<text x="20" y="327" fill="#f6faff" font-size="13">05 stand charge</text>
+<rect x="260" y="309" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="325" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="321" fill="#cad9e9" font-size="12">0 / 0</text>
+<text x="20" y="372" fill="#f6faff" font-size="13">06 right alias</text>
+<rect x="260" y="354" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="370" width="371.4" height="13" fill="#58d2ac"/>
+<text x="908" y="366" fill="#cad9e9" font-size="12">0 / 438</text>
+<text x="20" y="417" fill="#f6faff" font-size="13">07 right</text>
+<rect x="260" y="399" width="165.3" height="13" fill="#8faacc"/>
+<rect x="260" y="415" width="61.0" height="13" fill="#58d2ac"/>
+<text x="908" y="411" fill="#cad9e9" font-size="12">195 / 72</text>
+<text x="20" y="462" fill="#f6faff" font-size="13">08 right charge</text>
+<rect x="260" y="444" width="630.0" height="13" fill="#8faacc"/>
+<rect x="260" y="460" width="625.8" height="13" fill="#58d2ac"/>
+<text x="908" y="456" fill="#cad9e9" font-size="12">743 / 738</text>
+<text x="20" y="507" fill="#f6faff" font-size="13">09 fire horizontal</text>
+<rect x="260" y="489" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="505" width="69.5" height="13" fill="#58d2ac"/>
+<text x="908" y="501" fill="#cad9e9" font-size="12">0 / 82</text>
+<text x="20" y="552" fill="#f6faff" font-size="13">10 fire up 45</text>
+<rect x="260" y="534" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="550" width="13.6" height="13" fill="#58d2ac"/>
+<text x="908" y="546" fill="#cad9e9" font-size="12">0 / 16</text>
+<text x="20" y="597" fill="#f6faff" font-size="13">11 fire vertical</text>
+<rect x="260" y="579" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="595" width="23.7" height="13" fill="#58d2ac"/>
+<text x="908" y="591" fill="#cad9e9" font-size="12">0 / 28</text>
+<text x="20" y="642" fill="#f6faff" font-size="13">12 fire down 45</text>
+<rect x="260" y="624" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="640" width="1.0" height="13" fill="#58d2ac"/>
+<text x="908" y="636" fill="#cad9e9" font-size="12">0 / 0</text>
+<text x="20" y="687" fill="#f6faff" font-size="13">13 fire horizontal alias</text>
+<rect x="260" y="669" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="685" width="52.6" height="13" fill="#58d2ac"/>
+<text x="908" y="681" fill="#cad9e9" font-size="12">0 / 62</text>
+<text x="20" y="732" fill="#f6faff" font-size="13">14 fire horizontal alias</text>
+<rect x="260" y="714" width="1.0" height="13" fill="#8faacc"/>
+<rect x="260" y="730" width="73.8" height="13" fill="#58d2ac"/>
+<text x="908" y="726" fill="#cad9e9" font-size="12">0 / 87</text>
+</svg>

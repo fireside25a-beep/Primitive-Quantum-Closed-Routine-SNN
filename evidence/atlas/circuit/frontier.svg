@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430" role="img" aria-label="Exhaustive pulse search cost latency frontier">
+<title>Exhaustive pulse search cost latency frontier</title><desc>Deterministic atlas root b9e0723e690a345b6685f840f755923af8568c1c2a84e1e1b6d598c254b39b41</desc>
+<rect width="100%" height="100%" fill="#101522"/>
+<text x="20" y="30" fill="#e5eaf2" font-family="monospace" font-size="18">NEUROMANTLE 0.4.1  |  FINITE SEARCH FRONTIER</text>
+<text x="20" y="55" fill="#e5eaf2" font-family="monospace" font-size="12">goal: evoke neuron 4  candidates 3</text>
+<rect x="80" y="90" width="780" height="1" fill="#7b8da5"/>
+<rect x="80" y="340" width="780" height="1" fill="#7b8da5"/>
+<rect x="80" y="90" width="1" height="250" fill="#7b8da5"/>
+<rect x="860" y="90" width="1" height="250" fill="#7b8da5"/>
+<text x="180" y="190" fill="#e5eaf2" font-family="monospace" font-size="16">No declared candidate met the goal.</text>
+<text x="80" y="375" fill="#e5eaf2" font-family="monospace" font-size="12">injected current (integer units)</text>
+<text x="550" y="375" fill="#e5eaf2" font-family="monospace" font-size="12">response latency in ticks (vertical)</text>
+<text x="20" y="412" fill="#e5eaf2" font-family="monospace" font-size="11">gold: nondominated   blue: dominated   successes: 0   root: b9e0723e690a345b</text>
+</svg>

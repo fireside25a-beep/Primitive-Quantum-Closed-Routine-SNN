@@ -1,0 +1,3 @@
+# Exact 100-microsecond simulated goal time and bounded full current sweep.
+goal_ns evoke 0 100000 100000
+sweep_ns 0 0 1 12 1

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 570">
+<rect width="920" height="570" fill="#111b2c"/>
+<text x="35" y="40" fill="#fff" font-size="22">Actual held-out games | before and after training</text>
+<text x="35" y="68" fill="#bcd0e5" font-size="13">Completion/win counts. Ninja seeds and Connect Four opponent settings are fixed within each pair.</text>
+<text x="35" y="106" fill="#f6faff" font-size="15">Ninja easy baseline : 3/8</text>
+<rect x="355" y="91" width="168.8" height="23" fill="#8ba7ca"/>
+<rect x="355" y="91" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="174" fill="#f6faff" font-size="15">Ninja easy trained : 3/8</text>
+<rect x="355" y="159" width="168.8" height="23" fill="#53daa7"/>
+<rect x="355" y="159" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="242" fill="#f6faff" font-size="15">Ninja hard baseline : 0/4</text>
+<rect x="355" y="227" width="0.0" height="23" fill="#8ba7ca"/>
+<rect x="355" y="227" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="310" fill="#f6faff" font-size="15">Ninja hard trained : 0/4</text>
+<rect x="355" y="295" width="0.0" height="23" fill="#53daa7"/>
+<rect x="355" y="295" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="378" fill="#f6faff" font-size="15">Connect Four baseline : 0/2</text>
+<rect x="355" y="363" width="0.0" height="23" fill="#8ba7ca"/>
+<rect x="355" y="363" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="446" fill="#f6faff" font-size="15">Connect Four trained : 0/2</text>
+<rect x="355" y="431" width="0.0" height="23" fill="#53daa7"/>
+<rect x="355" y="431" width="450" height="23" fill="none" stroke="#5c6e83"/>
+<text x="35" y="542" fill="#bcd0e5" font-size="13">Connect Four bounded regret: 42 before, 42 after.</text>
+</svg>

@@ -1,0 +1,5 @@
+# One target below threshold. A pulse at tick zero can evoke or pre-empt tick one.
+clock_ns 100000
+bio_neuron 0 0 10 1000000 100000
+bio_stim 100000 0 9
+duration_ns 400000

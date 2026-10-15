@@ -1,0 +1,7 @@
+# Paired stimulus intervention receipt, version 0.4
+
+`neuromantle compare BASE.nm VARIANT.nm OUT` executes both complete scenarios under the ordinary admission path. After removing only lines whose first token is `stim` or `bio_stim`, all remaining text must match exactly, including topology, clock, seed, noise, modules and comments. This deliberately refuses different models, feature inputs or random seeds. Both runs must admit. The output commits the common model digest, scenario digests, complete baseline and variant receipt digests, terminal state roots, shared prefix length, first divergent tick, optional simulated nanoseconds, and a comparison root. No divergence is recorded as `none`; runs without a declared physical clock use `unscaled` for divergent time.
+
+`compare-verify` reexecutes both runs and compares the entire comparison receipt byte for byte. Changed scenario bytes, changed executable modules or receipt edits fail replay. Comparison failures produce a deterministic refusal receipt, also replayable. Both commands use the same ordered C transition engine and causal and entropy records as `run` and `verify`.
+
+A first divergent state root is an observation within this model, not a proof that the stimulus is the only possible cause in the physical world. The receipt authenticates nothing by itself against an adversary who can replace both scenarios and receipt; host environment and executable dependencies remain replay assumptions. The output is a controlled, deterministic experiment record, not a clinical or safety guarantee.

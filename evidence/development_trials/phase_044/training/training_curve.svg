@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 560">
+<rect width="1060" height="560" fill="#111b2c"/>
+<text x="35" y="40" fill="#fff" font-size="22">0.4.4 native training | real-game objectives</text>
+<text x="35" y="66" fill="#bcd0e5" font-size="13">Separate score scales; training objectives are not held-out game scores.</text>
+<text x="35" y="110" fill="#f7fbff" font-size="16">Ninja training objective (game completions and time)</text>
+<path d="M 45 270 H 990" stroke="#4c5e70"/>
+<polyline points="45,270 65,208 85,208 106,208 126,208 147,208 167,208 188,146 208,146 228,146 249,146 269,146 290,146 310,146 331,145 351,145 371,145 392,145 412,145 433,145 453,145 474,145 494,145 515,145 535,145 555,145 576,145 596,145 617,145 637,145 658,145 678,145 698,145 719,145 739,145 760,145 780,145 801,145 821,145 841,145 862,145 882,145 903,145 923,145 944,145 964,145 985,145" fill="none" stroke="#57ddaa" stroke-width="3"/>
+<text x="40" y="295" fill="#bcd0e5" font-size="12">evaluations 47 | start 109720 | best 328800</text>
+<text x="35" y="325" fill="#f7fbff" font-size="16">Connect Four training objective (negative bounded regret)</text>
+<path d="M 45 485 H 990" stroke="#4c5e70"/>
+<polyline points="45,485 84,485 123,485 162,485 201,485 240,485 280,485 319,485 358,485 397,485 436,485 475,485 515,485 554,485 593,485 632,485 671,485 710,485 750,485 789,485 828,485 867,485 906,485 945,485 985,485" fill="none" stroke="#f3bb68" stroke-width="3"/>
+<text x="40" y="510" fill="#bcd0e5" font-size="12">evaluations 25 | start -78 | best -78</text>
+<text x="35" y="542" fill="#bcd0e5" font-size="12">Native coordinate search accepts strictly improving scores. Held-out evaluation is separate.</text>
+</svg>

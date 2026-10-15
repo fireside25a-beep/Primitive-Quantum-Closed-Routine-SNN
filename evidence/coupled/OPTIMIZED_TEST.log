@@ -1,0 +1,44 @@
+make -C vendor/devcli devcli
+make[1]: Entering directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.6-primitiveq-core/vendor/devcli'
+make[1]: Nothing to be done for 'devcli'.
+make[1]: Leaving directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.6-primitiveq-core/vendor/devcli'
+./bin/test_primitiveq
+./bin/primitiveq_oracle
+primitiveq independent statevector oracle: PASS (49,152 randomized transitions)
+./bin/test_world
+python3 tests/world_integration.py
+coupled native world, quantum feedback, eight-mask interaction, holdout and tampering: PASS
+python3 tests/watchdog_integration.py
+watchdog propagates exit codes and kills a timed out process group: PASS
+./bin/test_train_native
+native deterministic integer and Hamming training PASS
+python3 tests/training_oracle.py
+1,024-bit native training: 69 vectors, 100 independent Hamming queries PASS
+./bin/test_core
+core dynamics, delayed delivery, LTP, LTD, refusal, transactional overflow: PASS
+./bin/test_ecc
+SECDED word exhaustive single/double faults and atomic checkpoint restore: PASS
+./bin/test_bioclock
+biological grid arithmetic: PASS
+./bin/test_state_tree
+incremental Merkle root equals complete rebuild through 25 transitions: PASS
+python3 tests/integration.py
+integration replay/tamper/refusal: PASS receipt_sha256=8754bdba4be8c789cee860f8ab04490bd7a3723ceec7a6ba3382ea8ccf7a0b18
+python3 tests/bio_clock_integration.py
+biological clock integration: PASS
+python3 tests/intervention_integration.py
+paired intervention replay: PASS
+python3 tests/atlas_integration.py
+atlas search, monotonic witness, pair interactions, graph replay and refusal: PASS
+python3 tests/sandbox_integration.py
+sandbox denied file overwrite/create/delete, directory creation, IPv4/Unix sockets, SysV shared memory and fork: PASS
+python3 tests/ai_integration.py
+local AI proposal admission, live/offline replay, mutation and refusal: PASS
+python3 tests/socket_integration.py
+preconnected Unix model socket: SKIP (host denies AF_UNIX creation)
+python3 tests/bigint_differential.py
+arbitrary precision arithmetic differential: PASS (600 signed pairs, up to 250 digits)
+python3 tests/network_oracle.py
+independent network dynamics oracle: PASS (80 networks, 960 ticks)
+python3 tests/qecc_integration.py
+five-qubit certificate admission, mutation refusal and replay: PASS
