@@ -17,7 +17,7 @@ declared neurons and synapses, not biological anatomy.
 
 A deterministic spiking network with a C11 simulation core, weighted routing and 1024-bit similarity input, backed by exact causal event records and seeded entropy. One `neuromantle` executable drives both scenario formats through the same C11 neuron-step function. With a `.nmw` scenario, configured spikes can trigger correction of a simulated five-qubit state and queue feedback current. With a `.nm` scenario and `qmemory weights5`, the same SNN core runs after encoded synaptic-weight bits are checked and restored. These modes use the same five-qubit code routines, but each run owns its network and tableau state. The executable also exposes the supplied developer CLI, Vanta compiler and Surreal proof tools through explicit commands.
 
-The top-level Apache-2.0 license covers NeuroMantle's original code. Each bundled companion keeps its own license in `vendor/`.
+The Apache-2.0 license covers NeuroMantle's original code. Each bundled companion keeps its own license in `vendor/`.
 
 For the sequence of validated changes and the evidence behind each stage, start with [Development path](docs/DEVELOPMENT_PATH.md). The [test matrix](docs/TEST_MATRIX.md) identifies executable checks for this snapshot; [evidence index](evidence/INDEX.md) separates current replay artifacts from earlier control and training evaluations.
 
