@@ -7,8 +7,9 @@ Every bit of every configured 32-bit synaptic weight is encoded as a separate
 software `[[5,1,3]]` logical state. Encoded `|1_L>` is prepared by applying
 logical `XXXXX` to encoded `|0_L>`. Before each neural tick, declared
 `qfault T EDGE BIT Q X|Y|Z` operations act on the encoded cell. The decoder
-reads four stabilizer signs, recovers at most one physical Pauli fault per cell,
-and reconstructs the weight vector with a native Fortran 2008 kernel. All
+extracts four stabilizer signs through a simulated ancilla circuit, recovers
+at most one declared physical Pauli fault per cell, and reconstructs the
+weight vector with a compiled Fortran 2008 or C11 integer decoder. All
 cells are checked before any weight is committed. After `nm_step`, changed
 weights are encoded again. A canonical tableau commitment, fault and correction
 count enter the causal event and receipt. `verify` reexecutes the full run.
@@ -22,11 +23,11 @@ RAM faults. Classical SECDED may also be enabled as a separate checkpoint.
 The transient faulty tableau is reconstructed during replay; the receipt binds
 the declared operation and recovered canonical state.
 
-The Fortran `ISO_C_BINDING` kernel is part of the production restore path. A
-full source rebuild requires a Fortran 2008 compiler such as `gfortran`, in
-addition to C11 and C++23 toolchains. It performs integer bit reconstruction,
-with no floating point or implicit random input. No speedup is claimed merely
-from using Fortran.
+The Fortran `ISO_C_BINDING` kernel is the selected restore backend when a
+Fortran 2008 compiler is present. The build selects an equivalent C11 decoder
+when it is absent. Each backend reconstructs integer bits from syndrome and
+logical-Z observations, with no floating point or implicit random input.
+The earlier Fortran timings are not a performance claim for this circuit.
 
 The stored codeword uses only the ten active rows of a five-qubit tableau,
 rather than reserving the generic 16-qubit capacity for every weight bit.
@@ -68,3 +69,11 @@ From the repository root:
 ./bin/neuromantle verify examples/ecc.nm evidence/qecc/admitted.receipt
 ./bin/neuromantle verify examples/ecc_refused.nm evidence/qecc/refused.receipt
 ```
+
+## Combined world execution, 0.4.8
+
+The same encoded-memory correction is available inside a certified `.nmw`
+world with `qmemory weights5`. Recovery precedes one world neuron step, and
+changed STDP weights are reencoded before all model state is committed. The
+feedback tableau remains distinct data inside that transaction. See the
+[combined tick contract](COMBINED_TICK.md) and [executed results](../evidence/unified/RESULTS.md).

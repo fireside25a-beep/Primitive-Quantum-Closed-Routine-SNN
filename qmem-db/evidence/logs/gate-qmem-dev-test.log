@@ -1,0 +1,24 @@
+make -C vendor/devcli devcli
+make[1]: Entering directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/vendor/devcli'
+make[1]: Nothing to be done for 'devcli'.
+make[1]: Leaving directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/vendor/devcli'
+make -C qmem-db all
+make[1]: Entering directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'
+python3 qmem-db/tests/strict_five_qubit_regression.py
+FIVE_PACKAGED_AND_UPDATED_PASS receipt_sha256=3c43d1cbef38558f35e010ca7904a9f431f1ed488d620d8f1053464350dba6aa graph_sha256=bd4e67aadde450ccc735641bac9206954c1e565b76e69f21d4126914d86ce27d
+ENCODED_PACKAGED_AND_UPDATED_PASS receipt_sha256=e39c26c51fb4eaec44fed212cf6d6ca181b225607b821448b57f1f40ee456ec9 graph_sha256=bd0ba2836e22d4a3256b6db54df35e5c372111fa95f6c8ff45194cc6d8b549ac
+CORRUPTED_QECC_CERTIFICATE_REFUSAL_PASS original=3 updated=3
+STRICT_FIVE_QUBIT_RELEASE_GATE_PASS
+make -C qmem-db test
+make[1]: Entering directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'
+python3 tests/hash_crc.py
+QMEM_PROTO_ORACLE_PASS sha256=1000 crc32=1000 roundtrips=1000 bitflip_rejections=1000
+python3 tests/check.py
+QMEM_DEV_DB_TAMPER_PASS independent_table_modifications= 9
+QMEM_DEV_TEST_PASS ticks=4 codewords=128 tableau_rows=1280 tamper_cases=5 replay=byte-identical
+QMEM_DEV_SHA256 a5e7258cd18a3fffeae04b5bbab8e767299a1b3f54747e57d05d3fcddc234063
+python3 tests/security_io.py
+QMEM_DEV_SECURITY_IO_PASS absent_db_refusal read_only_root symlink_hardlink_refusal invalid_source_rollback
+make[1]: Leaving directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'

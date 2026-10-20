@@ -29,6 +29,13 @@ Before a run, a local AI adapter can propose strictly ordered `stim` operations.
 
 ## Coupled world, 0.4.6
 
-The optional certified five-qubit path in 0.4.6.1 checks the exact `SQECC001` generator set before preparing encoded `|0_L>`. A network spike causes one physical Pauli fault; the `Q` rule reads four stabilizer signs, corrects that fault and feeds a nonzero syndrome back as next-tick network current. The certificate, verifier, tableau and correction are bound to the receipt. The older two-qubit world remains unchanged. See [the exact encoded mode and single-fault assumption](PRIMITIVEQ_WORLD.md).
+The optional certified five-qubit path checks the exact `SQECC001` generator set before preparing encoded `|0_L>`. A network spike causes one declared Pauli fault; the `Q` rule extracts four stabilizer signs through a sixth simulated ancilla, corrects that fault and feeds a nonzero syndrome back as next-tick network current. Three extraction rounds permit an optional single classical readout flip to be tested. The certificate, verifier, tableau and correction are bound to the receipt. The older two-qubit world remains unchanged. See [the encoded mode and single-fault assumption](PRIMITIVEQ_WORLD.md).
 
 `core/neuro_world.c` stages a complete network state, bounded conservative field and `core/primitiveq.c` tableau for every coupled tick. The field sensor enters the SNN before `nm_step`, its spike result gates directed flux and Clifford rules, and a one-bit measurement may inject current for the next tick. `src/world.cpp` parses the versioned `.nmw` contract, records independent field and quantum seeded entropy roots, Surreal causal events and state hashes, and reexecutes complete receipts and actual measured SVGs on verification. `training/improve.c` is the existing bounded native proposal engine; its new world callback executes this whole system on separated trial sets. The triad command reexecutes all eight three-pulse subsets and records exact integer finite differences. This interface is separate from legacy `.nm` receipts, which remain byte compatible. [Detailed contracts](PRIMITIVEQ_WORLD.md).
+
+## Combined transaction
+
+A certified world with `qmemory weights5` invokes the native `Weights::step`
+transaction: restore weights, execute the existing world step once, reencode
+STDP changes, and commit all model state. Both recovery state sets are included
+in the combined receipt. See [the exact execution order](COMBINED_TICK.md).

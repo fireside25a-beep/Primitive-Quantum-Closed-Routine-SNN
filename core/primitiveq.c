@@ -1,4 +1,5 @@
 #include "primitiveq.h"
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -119,10 +120,58 @@ int pq_five_syndrome(const pq_state *s,unsigned *syndrome){
     }
     *syndrome=value;return 0;
 }
-int pq_five_correct(pq_state *s,unsigned *syndrome,unsigned *correction){
-    if(!s||!syndrome||!correction||pq_five_syndrome(s,syndrome))return -1;
-    *correction=0;
-    if(!*syndrome)return 0;
+static int five_measure_pauli(pq_state *work,pq_row g,unsigned *bit){
+    for(unsigned q=0;q<5;q++)if(g.x&(1u<<q))if(pq_h(work,q))return -1;
+    for(unsigned q=0;q<5;q++)if((g.x|g.z)&(1u<<q))
+        if(pq_cnot(work,q,5))return -1;
+    for(unsigned q=0;q<5;q++)if(g.x&(1u<<q))if(pq_h(work,q))return -1;
+    unsigned random=0;
+    if(pq_measure_z(work,5,0,bit,&random)||random)return -1;
+    if(*bit&&pq_pauli(work,5,'X'))return -1;
+    return 0;
+}
+static int five_with_ancilla(const pq_state *s,pq_state *work){
+    if(!s||s->n!=5||pq_init(work,6))return -1;
+    for(unsigned i=0;i<5;i++){
+        work->rows[i]=s->rows[i];
+        work->rows[6+i]=s->rows[5+i];
+    }
+    return 0;
+}
+int pq_five_syndrome_circuit_readout(const pq_state *s,unsigned flip_round,
+                                    unsigned flip_generator,unsigned *syndrome){
+    if(!s||!syndrome||s->n!=5||
+       (flip_round!=UINT_MAX&&(flip_round>=3||flip_generator>=4)))return -1;
+    pq_state work={0};
+    if(five_with_ancilla(s,&work))return -1;
+    unsigned vote[4]={0,0,0,0};
+    for(unsigned round=0;round<3;round++)for(unsigned g=0;g<4;g++){
+        unsigned bit=0;
+        if(five_measure_pauli(&work,five_generators[g],&bit))return -1;
+        if(round==flip_round&&g==flip_generator)bit^=1u;
+        vote[g]+=bit;
+    }
+    unsigned value=0;
+    for(unsigned g=0;g<4;g++)value|=(vote[g]>=2u)<<g;
+    *syndrome=value;
+    return 0;
+}
+int pq_five_syndrome_circuit(const pq_state *s,unsigned *syndrome){
+    return pq_five_syndrome_circuit_readout(s,UINT_MAX,0,syndrome);
+}
+int pq_five_logical_z_circuit(const pq_state *s,unsigned *bit){
+    if(!bit)return -1;
+    pq_state work={0};
+    if(five_with_ancilla(s,&work))return -1;
+    const pq_row logical_z={0u,31u,0u};
+    return five_measure_pauli(&work,logical_z,bit);
+}
+static int five_correct(pq_state *s,unsigned round,unsigned generator,
+                        unsigned *syndrome,unsigned *correction){
+    unsigned observed=0,selected=0;
+    if(!s||!syndrome||!correction||
+       pq_five_syndrome_circuit_readout(s,round,generator,&observed))return -1;
+    if(!observed){*syndrome=0;*correction=0;return 0;}
     pq_row errors[15];uint32_t values[15];
     for(unsigned q=0;q<5;q++)for(unsigned kind=0;kind<3;kind++){
         unsigned index=3u*q+kind;
@@ -130,12 +179,23 @@ int pq_five_correct(pq_state *s,unsigned *syndrome,unsigned *correction){
     }
     if(pq_syndrome_scalar(five_generators,4,5,errors,15,values))return -1;
     unsigned matches=0,index=0;
-    for(unsigned k=0;k<15;k++)if(values[k]==*syndrome){matches++;index=k;}
+    for(unsigned k=0;k<15;k++)if(values[k]==observed){matches++;index=k;}
     if(matches!=1)return -1;
     static const char operations[]={'X','Z','Y'};
-    if(pq_pauli(s,index/3u,operations[index%3u]))return -1;
-    unsigned after=0;if(pq_five_syndrome(s,&after)||after)return -1;
-    *correction=index+1u;return 0;
+    pq_state staged=*s;
+    if(pq_pauli(&staged,index/3u,operations[index%3u]))return -1;
+    unsigned after=0;if(pq_five_syndrome_circuit(&staged,&after)||after)return -1;
+    selected=index+1u;
+    *s=staged;*syndrome=observed;*correction=selected;
+    return 0;
+}
+int pq_five_correct(pq_state *s,unsigned *syndrome,unsigned *correction){
+    return five_correct(s,UINT_MAX,0,syndrome,correction);
+}
+int pq_five_correct_readout(pq_state *s,unsigned flip_round,unsigned flip_generator,
+                            unsigned *syndrome,unsigned *correction){
+    if(flip_round>=3||flip_generator>=4)return -1;
+    return five_correct(s,flip_round,flip_generator,syndrome,correction);
 }
 static int syndrome_args(const pq_row *g,unsigned n_g,unsigned n,const pq_row *e,size_t count,uint32_t *out){
     if(!g||!e||!out||!n||n>PQ_MAX_QUBITS||!n_g||n_g>n||!count)return -1;

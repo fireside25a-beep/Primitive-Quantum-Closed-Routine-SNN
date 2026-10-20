@@ -1,0 +1,9 @@
+# 0.4.7 circuit and readout validation
+
+The optimized source build passed `make -j2 test` on the development host. This includes the executable five-qubit ancilla syndrome circuit, all fifteen single-qubit Pauli errors, each of the twelve declared one-bit readout flip positions, encoded weight restoration, receipt replay and tamper refusal, and the existing network, clock, routing, atlas, and arithmetic suites. The complete weight restore path exercised all 32 bit positions against every one of the fifteen single-qubit Pauli faults. An independent 64-amplitude statevector oracle compared 32 five-qubit logical state and fault cases against the circuit implementation. The existing randomized tableau oracle covered 49,152 seeded transitions. The normal arbitrary-precision differential test covered 600 signed pairs.
+
+An instrumented ASan and UBSan build passed the test suite with `ASAN_OPTIONS=detect_leaks=0:halt_on_error=1` and `UBSAN_OPTIONS=halt_on_error=1`. The host denied LeakSanitizer access to `/proc/.../task` with leak detection enabled, before the tests could run; a leak-detection pass is therefore not claimed here. The local socket integration reported an explicit skip because this host denied Unix socket creation.
+
+This host has no Fortran compiler. The C11 decoder backend was built and tested locally; the Fortran source is included and selected on hosts with `gfortran`. No local Fortran build result is claimed.
+
+The circuit, injected readout faults, and codeword memory are software representations. These tests do not establish physical QPU operation, immunity to faulty gates or arbitrary RAM corruption, or a fault-tolerant syndrome extraction gadget. A single ancilla data gate fault can propagate into more than one data qubit. A source archive must pass `python3 scripts/check_release.py ARCHIVE.zip` before distribution; that check rebuilds and tests from a fresh extraction and replays the bundled evidence.

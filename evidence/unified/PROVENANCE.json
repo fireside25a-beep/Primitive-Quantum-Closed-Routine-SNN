@@ -1,0 +1,33 @@
+{
+  "baseline_archive": "01-NeuroMantle-0.4.7-circuit-readout.zip",
+  "baseline_sha256": "83f881db079a9ae3ee3cd6744f726d79ecf3f367e2d26a494d1a6e3c340baf92",
+  "baseline_files": 701,
+  "missing_baseline_files": [],
+  "changed_baseline_paths": [
+    ".github/workflows/nightly.yml",
+    "CHANGELOG.md",
+    "Makefile",
+    "README.md",
+    "bin/neuromantle",
+    "docs/API_ABI.md",
+    "docs/ARCHITECTURE.md",
+    "docs/DEVELOPMENT_PATH.md",
+    "docs/ECC.md",
+    "docs/GETTING_STARTED.md",
+    "docs/NIGHTLY_RELEASE.md",
+    "docs/PRIMITIVEQ_WORLD.md",
+    "docs/QMEMORY_PROOF.md",
+    "docs/READOUT_ENTROPY.md",
+    "docs/TEST_MATRIX.md",
+    "docs/VERIFICATION.md",
+    "evidence/INDEX.md",
+    "scripts/check_release.py",
+    "scripts/package.py",
+    "src/qmemory.cpp",
+    "src/qmemory.hpp",
+    "src/world.cpp"
+  ],
+  "version": "0.4.8",
+  "combined_directive": "qmemory weights5",
+  "receipt_schema": "NEUROMANTLE_COUPLED_MEMORY_QECC5_V1"
+}

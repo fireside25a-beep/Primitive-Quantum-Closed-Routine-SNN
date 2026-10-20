@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.4.8 combined memory and feedback transaction
+
+Certified `.nmw` scenarios accept `qmemory weights5` and `qfault`. The memory
+layer restores weights before one existing world step, captures STDP updates,
+and commits its codewords together with the network, field and feedback state.
+The combined receipt commits both state sets and correction provenance.
+The build links the GNU Fortran runtime when the Fortran decoder is selected.
+Native and CLI tests cover memory recovery, next-tick feedback, late refusal,
+STDP reencoding, independent state chains and replay tampering.
+
+
+## 0.4.7 simulated ancilla circuit and snapshot-free memory recovery
+
+The certified five-qubit path now simulates explicit generator extraction:
+one resettable sixth ancilla, basis rotations and CNOT couplings, three
+measurement rounds, a bounded single classical readout-flip experiment and
+a clean post-correction circuit read. A configured `qreadout_flip` enters the
+world scenario and receipt. A separate six-qubit statevector oracle checks
+both logical basis states and all single-qubit Pauli cases; all twelve
+readout locations are exercised through the actual world command and replay.
+
+QMemory no longer consults a stored expected-bit snapshot. Faulted cells use
+ancilla logical-Z and syndrome measurements; the selected Fortran or C11
+integer decoder reconstructs the bit and weight. Complete canonical tableau
+validation precedes the atomic network commit. The stored encoded-word copy
+was removed; STDP changes are re-encoded from the already collected pre-step
+weight vector. The circuit does not establish tolerance of gate faults or
+protection against arbitrary host-memory corruption, and no QPU was used.
+
 ## 0.4.6.3 finite readout decoder and OS seeded scenarios
 
 The active one-fault QMemory restore now calls a compiled Fortran 2008

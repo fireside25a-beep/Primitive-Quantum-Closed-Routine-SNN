@@ -27,9 +27,10 @@ IDs are `uint16_t` in `[0,1023]`. Delays are integer ticks in `[1,64]`. Leak is 
 | `run` | scenario, receipt path | Simulate and atomically write an admission or refusal receipt. |
 | `verify` | scenario, receipt path | Reexecute and compare the complete receipt. |
 | `seed-from-os` | unseeded `.nm` scenario, new seeded `.nm` path | Sample one Linux kernel random seed, materialize it into a validated scenario, then use ordinary run and verify. |
-| `run` / `verify` with QMemory | `.nm` with `qmemory weights5`, matching `qecc_certificate`, optional `qfault` | Encode synaptic weight bits, correct one declared Pauli fault per block, reconstruct signed weights using compiled Fortran and replay the encoded-state receipt. |
+| `run` / `verify` with QMemory | `.nm` with `qmemory weights5`, matching `qecc_certificate`, optional `qfault` | Encode synaptic weight bits, correct one declared Pauli fault per block using an ancilla circuit, reconstruct signed weights using the selected compiled integer decoder and replay the encoded-state receipt. |
 | `world-run` / `world-verify` | `.nmw` scenario, receipt, SVG path | Execute or replay the atomic SNN/field/PrimitiveQ world and graph. |
 | Certified `world-run` / `world-verify` | `.nmw` with `qubits 5`, `qecc_certificate PATH`, X/Y/Z and Q rules | Check exact certificate and verifier, prepare encoded logical zero, apply at most one declared Pauli fault before syndrome read, correct and route syndrome current to next tick; replay full QECC5 receipt and graph. |
+| Combined `world-run` / `world-verify` | Certified `.nmw` plus `qmemory weights5`, optional memory `qfault` | Restore encoded weights, execute one world tick including quantum feedback, reencode STDP changes and commit all model state; compare combined receipt and SVG on replay. |
 | `world-improve` / `world-improve-verify` | `.nmw` scenario, search receipt, SVG path | Evaluate bounded native parameter updates with separate train, validation and holdout trials; replay every result. |
 | `world-interaction` / `world-interaction-verify` | `.nmw` scenario with three pulses, receipt, SVG path | Execute eight pulse masks, compute exact subset interactions and replay the graph. |
 | `atlas` / `atlas-verify` | baseline, plan, receipt, three SVG paths | Execute/replay singles and pairs plus three measured graphs. |

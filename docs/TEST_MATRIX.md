@@ -2,9 +2,11 @@
 
 | Layer | Executable gate | Failure detected |
 | --- | --- | --- |
+| Combined tick | `bin/test_combined`, `tests/combined_integration.py` | 480 bit/Pauli cases, feedback timing, STDP reencoding, late transactional refusal, 12 readout flips, state-root chaining and receipt/SVG tampering |
 | Core C unit | `bin/test_core` | Spike timing, delivery, potentiation, depression, rejection, atomic overflow |
 | PrimitiveQ tableau | `bin/test_primitiveq`, `bin/primitiveq_oracle` | Five-qubit single-Pauli syndrome uniqueness, Clifford/measurement disagreement with an independent small complex statevector oracle |
-| Encoded synaptic memory | `bin/test_qmemory`, `bin/test_qmemory_readout`, `tests/qmemory_integration.py`, `tests/five_code_oracle.py` | Both encoded logical bit values, 30 single-fault statevector recoveries, all 15 syndromes decoded from raw logical signs by Fortran, wrong independent expected bits, malformed inputs, atomic refusal, STDP re-encoding and receipt tampering |
+| Encoded synaptic memory | `bin/test_qmemory`, `bin/test_qmemory_readout`, `tests/qmemory_integration.py`, `tests/five_code_oracle.py` | Both encoded logical bit values, all 15 syndrome-to-Pauli cases, snapshot-free raw readout, canonical tableau cross-check, malformed inputs, atomic refusal, STDP re-encoding and receipt tampering |
+| Ancilla circuit | `bin/test_primitiveq`, `tests/five_circuit_oracle.py`, `tests/five_code_integration.py` | Three rounds of four explicit ancilla measurements, independent 64-amplitude oracle for 32 logical/fault cases, all 12 single readout-flip locations, full receipt replay and tamper refusal |
 | OS seed materialization | `tests/entropy_seed_integration.py` | Missing, duplicate or invalid seed materialization; changed seed; non-replayable noisy runs |
 | Isolated native restore and SIMD candidate | `bin/bench_qmemory_restore`, optional `make bench-ispc` | Measured clean restore against the previous implementation; ISPC canonical classification checked against scalar output before timing and rejected as slower on this layout |
 | Atomic coupled world | `bin/test_world`, `tests/world_integration.py` | Network/field/quantum partial commit, mass loss, missing measurement feedback, incorrect third-order finite difference, holdout regression and receipt/graph tampering |

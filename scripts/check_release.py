@@ -7,7 +7,7 @@ import sys
 import tempfile
 import zipfile
 
-PREFIX = "NeuroMantle-0.4.6.3-readout-decoder/"
+PREFIX = "NeuroMantle-0.4.8-unified/"
 archive = Path(sys.argv[1]).resolve(strict=True) if len(sys.argv) == 2 else None
 if archive is None:
     raise SystemExit("usage: python3 scripts/check_release.py ARCHIVE.zip")
@@ -77,8 +77,12 @@ with tempfile.TemporaryDirectory(prefix="neuro-core-release-") as tmp:
             "evidence/coupled/" + receipt, "evidence/coupled/" + graph)
     run("bin/neuromantle", "world-verify", "examples/coupled_five_code.nmw",
         "evidence/qecc_coupled/run.receipt", "evidence/qecc_coupled/dynamics.svg")
+    run("bin/neuromantle", "world-verify", "examples/coupled_five_readout_flip.nmw",
+        "evidence/qecc_readout/run.receipt", "evidence/qecc_readout/dynamics.svg")
     run("bin/neuromantle", "verify", "examples/qmemory_weights.nm",
         "evidence/qmemory/run.receipt")
+    run("bin/neuromantle", "world-verify", "examples/combined_memory_feedback.nmw",
+        "evidence/unified/run.receipt", "evidence/unified/dynamics.svg")
     graph = root / "evidence/qmemory/dynamics.svg"
     before = graph.read_bytes()
     run("python3", "scripts/plot_qmemory.py", "evidence/qmemory/run.receipt", str(graph))

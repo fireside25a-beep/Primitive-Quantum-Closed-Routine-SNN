@@ -125,6 +125,11 @@ std::int64_t invoke(const Module &module,std::uint64_t tick,std::uint16_t src,st
 }
 std::string verify_qecc(const std::string &path){
     auto tool=(runtime_root/"vendor/surreal/upstream/bin/surreal-linux-x86_64").string();
+    // A missing executable bit is a broken installation, not a failed QECC proof.
+    // Fail closed, but report the operational defect distinctly so it can be repaired.
+    struct stat verifier_stat{};
+    if(stat(tool.c_str(),&verifier_stat)!=0||!S_ISREG(verifier_stat.st_mode)||access(tool.c_str(),X_OK)!=0)
+        throw std::runtime_error("bundled QECC verifier is not executable (restore executable modes on extraction)");
     int pipefd[2];if(pipe(pipefd))throw std::runtime_error("cannot create QECC verification pipe");
     pid_t pid=fork();
     if(pid<0){close(pipefd[0]);close(pipefd[1]);throw std::runtime_error("cannot fork QECC verifier");}
@@ -460,7 +465,7 @@ std::string execute(const std::string &data) {
         auto after=state.root();
         std::string qmemory_root;
         if(qmemory){
-            qmemory->capture(*s.net);
+            qmemory->capture_updated(*s.net,old_weights);
             qmemory_root=qmemory->root();
         }
         std::string ecc_hash;
@@ -586,7 +591,7 @@ void distinct_paths(int argc,char** argv) {
         paths.push_back(std::move(path));
     }
 }
-void usage(){std::cerr<<"usage: neuromantle run SCENARIO RECEIPT | verify SCENARIO RECEIPT | seed-from-os SOURCE.nm SEEDED.nm | world-run WORLD.nmw RECEIPT GRAPH.svg | world-verify WORLD.nmw RECEIPT GRAPH.svg | world-improve WORLD.nmw SEARCH.receipt GRAPH.svg | world-improve-verify WORLD.nmw SEARCH.receipt GRAPH.svg | world-interaction WORLD.nmw TRIAD.receipt GRAPH.svg | world-interaction-verify WORLD.nmw TRIAD.receipt GRAPH.svg | compare BASE VARIANT RECEIPT | compare-verify BASE VARIANT RECEIPT | atlas BASE PLAN RECEIPT DIVERGENCE.svg FRONTIER.svg INTERACTION.svg | atlas-verify BASE PLAN RECEIPT DIVERGENCE.svg FRONTIER.svg INTERACTION.svg | synthesize BASE PLAN SEARCH_RECEIPT PROTOCOL.nm PROTOCOL_RECEIPT | synthesize-verify BASE PLAN SEARCH_RECEIPT PROTOCOL.nm PROTOCOL_RECEIPT | ai-run SCENARIO LOCAL_EXECUTABLE RECEIPT | ai-run-socket SCENARIO LOCAL_EXECUTABLE UNIX_SOCKET RECEIPT | ai-verify SCENARIO RECEIPT | ai-verify-live SCENARIO RECEIPT | dev COMMAND ... | surreal COMMAND ... | compile-vanta PROGRAM OUTPUT\n";}
+void usage(){std::cerr<<"usage: neuromantle run SCENARIO RECEIPT | verify SCENARIO RECEIPT | seed-from-os SOURCE.nm SEEDED.nm | world-run WORLD.nmw RECEIPT GRAPH.svg | world-qmem-export WORLD.nmw RECEIPT GRAPH.svg CELLS.qmx | world-verify WORLD.nmw RECEIPT GRAPH.svg | world-improve WORLD.nmw SEARCH.receipt GRAPH.svg | world-improve-verify WORLD.nmw SEARCH.receipt GRAPH.svg | world-interaction WORLD.nmw TRIAD.receipt GRAPH.svg | world-interaction-verify WORLD.nmw TRIAD.receipt GRAPH.svg | compare BASE VARIANT RECEIPT | compare-verify BASE VARIANT RECEIPT | atlas BASE PLAN RECEIPT DIVERGENCE.svg FRONTIER.svg INTERACTION.svg | atlas-verify BASE PLAN RECEIPT DIVERGENCE.svg FRONTIER.svg INTERACTION.svg | synthesize BASE PLAN SEARCH_RECEIPT PROTOCOL.nm PROTOCOL_RECEIPT | synthesize-verify BASE PLAN SEARCH_RECEIPT PROTOCOL.nm PROTOCOL_RECEIPT | ai-run SCENARIO LOCAL_EXECUTABLE RECEIPT | ai-run-socket SCENARIO LOCAL_EXECUTABLE UNIX_SOCKET RECEIPT | ai-verify SCENARIO RECEIPT | ai-verify-live SCENARIO RECEIPT | dev COMMAND ... | surreal COMMAND ... | compile-vanta PROGRAM OUTPUT\n";}
 }
 std::string nm_verified_qecc_proof(const std::string &path){
     auto proof=verify_qecc(path);
@@ -625,6 +630,16 @@ int main(int argc,char **argv){
             write_file(argv[3],seeded);
             std::cout<<"seeded_scenario_sha256="+surreal::hex(surreal::sha256(seeded))+"\n";
             return 0;
+        }
+        if(argc==6 && std::string(argv[1])=="world-qmem-export"){
+            distinct_paths(argc,argv);
+            auto result=nm_world_cli::run(read_file(argv[2]),true);
+            write_file(argv[3],result.receipt);
+            if(result.admitted){
+                write_file(argv[4],result.graph);
+                write_file(argv[5],result.qmem_cells);
+            }
+            return result.admitted?0:3;
         }
         if(argc==5 && (std::string(argv[1])=="world-run"||std::string(argv[1])=="world-verify"||
                        std::string(argv[1])=="world-improve"||std::string(argv[1])=="world-improve-verify"||

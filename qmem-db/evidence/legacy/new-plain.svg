@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300" viewBox="0 0 800 300">
+<title>Executed coupled field, spike, and PrimitiveQ measurements</title>
+<rect width="800" height="300" fill="#101b2c"/>
+<path d="M 48 30 V 240 H 780" stroke="#91a6bb" fill="none"/>
+<circle cx="48" cy="262" r="3" fill="#f7bd67"/>
+<circle cx="48" cy="277" r="3" fill="#a891ff"/>
+<circle cx="288" cy="262" r="3" fill="#f7bd67"/>
+<circle cx="768" cy="262" r="3" fill="#f7bd67"/>
+<path d="M 48 96 L 288 81 L 528 69 L 768 60" stroke="#57d6af" stroke-width="3" fill="none"/>
+<text x="48" y="22" fill="white">target mass; orange: spikes; violet: measured one</text>
+<text x="48" y="291" fill="#b7c9dc">receipt SHA-256: cb87e7c2c5ca312b6ca4a980b1fd3c0890d7c15d2e88f2767a8aac2d7c3a32a6</text>
+</svg>

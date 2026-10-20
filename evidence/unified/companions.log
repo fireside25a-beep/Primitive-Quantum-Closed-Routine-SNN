@@ -1,0 +1,96 @@
+make -C vendor/devcli devcli
+make[1]: Entering directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/devcli'
+make[1]: Nothing to be done for 'devcli'.
+make[1]: Leaving directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/devcli'
+python3 tests/check_companions.py
+companion CLI integration: PASS (DevCLI, Vanta executable, Surreal QECC certificate)
+python3 tests/qecc_integration.py
+five-qubit certificate admission, mutation refusal and replay: PASS
+make -C vendor/vanta test
+make[1]: Entering directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/vanta'
+./scripts/run_tests.sh
+PASS positive autodiff.vnt
+PASS positive capability.vnt
+PASS positive f64_edges.vnt
+PASS positive f64_math.vnt
+PASS positive f64_tensor.vnt
+PASS positive file_io.vnt
+PASS positive map.vnt
+PASS positive numeric_env.vnt
+PASS positive on_call.vnt
+PASS positive resource_cleanup.vnt
+PASS positive routing.vnt
+PASS positive sha256.vnt
+PASS positive spatial.vnt
+PASS positive text.vnt
+PASS positive vector.vnt
+PASS positive wrapping.vnt
+PASS positive heterogeneous.vnt
+PASS positive multi-file
+PASS negative raw_load.vnt
+PASS negative raw_store.vnt
+PASS negative raw_syscall.vnt
+PASS negative private_call.vnt
+PASS negative type_domain.vnt
+PASS negative type_f64.vnt
+PASS negative type_assignment.vnt
+PASS negative type_vector.vnt
+PASS negative type_map.vnt
+PASS negative type_digest.vnt
+PASS negative constant_allocation.vnt
+PASS negative constant_digest_word.vnt
+PASS negative constant_domain_capacity.vnt
+PASS negative constant_domain_id.vnt
+PASS negative constant_fabric_cost.vnt
+PASS negative constant_negative_offset.vnt
+PASS negative constant_permissions.vnt
+PASS negative constant_tensor_cols.vnt
+PASS negative constant_tensor_rows.vnt
+PASS negative constant_vector_capacity.vnt
+PASS negative reserved_definition.vnt
+PASS negative type_spatial.vnt
+PASS runtime spatial_bad_key.vnt exit=137
+PASS runtime spatial_empty.vnt exit=137
+PASS runtime spatial_duplicate.vnt exit=137
+PASS runtime spatial_unreadable.vnt exit=124
+PASS runtime spatial_capacity.vnt exit=127
+PASS runtime bounds.vnt exit=124
+PASS runtime topology.vnt exit=128
+PASS runtime capacity.vnt exit=127
+PASS runtime no_route.vnt exit=129
+PASS runtime sealed_write.vnt exit=124
+PASS runtime root_with_subcap.vnt exit=124
+PASS runtime tensor_bounds.vnt exit=130
+PASS runtime stale_handle.vnt exit=124
+PASS runtime forged_handle.vnt exit=124
+PASS runtime vector_bounds.vnt exit=133
+PASS runtime map_missing.vnt exit=134
+PASS runtime resource_leak.vnt exit=136
+spatial differential oracle: PASS (20 queries, four domains, 1024-bit exact distance)
+PASS reproducibility sha256=c0719eec8ebc7f34c9a214d14b766883e59dfc47d240fe8a85c8bb82caafcbcb
+RESULT pass=59 fail=0
+make[1]: Leaving directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/vanta'
+make: Entering directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/devcli'
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 -c src/routing.c -o build/routing.o
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 -c src/spatial_pool.c -o build/spatial_pool.o
+ar rcs lib/libneuro_router.a build/routing.o build/spatial_pool.o
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 tests/test_routing.c lib/libneuro_router.a  -o bin/test_routing
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 tests/test_spatial_pool.c lib/libneuro_router.a  -o bin/test_spatial_pool
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 tests/test_process_runner.c build/process_runner.o  -o bin/test_process_runner
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 tests/test_project_detect.c build/project_detect.o build/fs_utils.o  -o bin/test_project_detect
+cc -Iinclude -std=c11 -Wall -Wextra -Wpedantic -Werror -O2 tests/test_project_init.c build/project_init.o build/project_detect.o build/fs_utils.o  -o bin/test_project_init
+./bin/test_routing
+routing tests: PASS
+./bin/test_spatial_pool
+spatial pool tests: PASS
+./bin/test_process_runner
+neuro: failed to start 'neuroroute-command-that-does-not-exist': No such file or directory
+process runner tests: PASS
+./bin/test_project_detect
+project detect tests: PASS
+./bin/test_project_init
+neuro: refusing to overwrite non-empty directory: /tmp/neuroroute-init-D84PB2/protected
+project init tests: PASS
+./tests/test_cli.sh ./bin/neuro
+CLI smoke tests: PASS
+make: Leaving directory '/workspace/scratch/6fa896026525/NeuroMantle-0.4.8-unified/vendor/devcli'

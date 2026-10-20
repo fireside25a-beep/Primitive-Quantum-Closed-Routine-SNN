@@ -1,0 +1,21 @@
+# One network: recover encoded weights, step once, correct feedback, reencode.
+clock_ns 100000
+seed 4
+qubits 5
+qecc_certificate examples/qecc/five_qubit.sqecc
+qmemory weights5
+steps 4
+neuron 0 0 10 65536 0
+neuron 1 0 10 65536 0
+edge 0 1 2 1 4 2 8 -100 100
+field 80 100 0 0
+field 20 100 1 0
+flux 0 1 0 1 32768 0 100 100
+qrule 0 X 0 0 0 0
+qrule 0 Q 0 0 1 10
+qreadout_flip 0 1 1 2
+qfault 0 0 31 0 X
+qfault 2 0 3 3 Y
+stim 0 0 10
+stim 2 0 10
+goal 1 1

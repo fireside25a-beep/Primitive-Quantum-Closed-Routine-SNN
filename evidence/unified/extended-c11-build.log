@@ -1,0 +1,1 @@
+g++ -Iinclude -Isrc -Ivendor/neuroroute/include -Ivendor/surreal/include -std=c++23 -O2 -Wall -Wextra -Wpedantic -Werror tests/test_combined.cpp build/qmemory.o build/primitiveq.o build/hash.o build/neuro_mantle.o build/neuro_world.o build/qmemory_decode_c.o  -o bin/test_combined

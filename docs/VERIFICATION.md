@@ -1,14 +1,16 @@
 # Admission and replay
 
 The optional `qmemory weights5` mode binds an exactly matching five-qubit
-certificate, encoded synaptic weight bits, a compiled Fortran decoder and
+certificate, encoded synaptic weight bits, an integer decoder and
 declared Pauli faults into the ordinary SNN receipt. Independent statevector
 tests enumerate both logical basis values and all 15 single-Pauli syndromes
 for each. [ECC](ECC.md) specifies the bounded software fault model. These
 finite tests do not prove every possible behavior of the full simulator.
-The faulted-cell path additionally checks raw logical signs and unique
-syndromes against a separately maintained expected-bit snapshot before commit.
-This remains a software observation; see [readout and entropy](READOUT_ENTROPY.md).
+The faulted-cell path obtains syndrome and logical-Z readouts through an
+explicit simulated ancilla circuit. Decoding does not use the old expected-bit
+snapshot; a corrected cell must match the complete canonical codeword of the
+decoded bit before commit. This remains a software observation; see
+[readout and entropy](READOUT_ENTROPY.md).
 
 The network parser rejects unknown directives, extra fields, duplicate neuron IDs, invalid edge endpoints or timing, invalid feature keys, missing seeds for stochastic inputs, and out-of-run stimuli. Errors are recorded in `NEUROMANTLE_REFUSAL_V1` with the scenario digest, deterministic reason and receipt root. A valid scenario records every tick under `NEUROMANTLE_RECEIPT_V1`.
 
@@ -29,3 +31,9 @@ When `qecc_certificate` appears, admission runs the bundled Surreal five-qubit c
 Clock-enabled runs additionally commit `clock_ns`, record the exact simulated time at each tick and use nanoseconds in the causal event time. Legacy receipts remain unchanged. `compare` and `compare-verify` commit and replay two complete run receipts while requiring every non-stimulus scenario line to match; [intervention semantics](INTERVENTIONS.md) describes the limits of the comparison.
 
 The 0.4.1 atlas commits baseline, every single and pair receipt, exact observables, finite monotonicity witnesses and the selected protocol digests. Atlas verification reexecutes all of them and regenerates all SVGs. Synthesis verification also compares the executable scenario and its normal receipt. This certifies replay within the declared domain, not global optimality or host attestation. [Experiment engine](EXPERIMENT_ENGINE.md) gives the exact contract.
+
+Combined world receipts use `NEUROMANTLE_COUPLED_MEMORY_QECC5_V1`. Their state
+digest commits both the existing world root and encoded memory root under
+`NM_COUPLED_MEMORY_STATE_V1`. Memory fault provenance, correction counts and
+feedback outcomes enter the causal invariant. `world-verify` reexecutes both
+layers and compares the complete receipt and graph. [Contract](COMBINED_TICK.md).

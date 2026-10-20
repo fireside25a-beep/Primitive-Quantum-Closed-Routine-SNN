@@ -7,9 +7,9 @@ contains
   ! The certified [[5,1,3]] code has one unique syndrome for each
   ! single-qubit Pauli error. Codes match pq_five_correct: 3*q+1 is X,
   ! 3*q+2 is Z, and 3*q+3 is Y. No multi-error inference is made here.
-  subroutine nm_qmemory_decode_observed(syndromes, raw_logical, expected, count, &
+  subroutine nm_qmemory_decode_observed(syndromes, raw_logical, count, &
        logical, corrections, weights, status) bind(C, name="nm_qmemory_decode_observed")
-    integer(c_int8_t), intent(in) :: syndromes(*), raw_logical(*), expected(*)
+    integer(c_int8_t), intent(in) :: syndromes(*), raw_logical(*)
     integer(c_size_t), value :: count
     integer(c_int8_t), intent(out) :: logical(*), corrections(*)
     integer(c_int32_t), intent(out) :: weights(*)
@@ -21,7 +21,7 @@ contains
          13_c_int8_t, 3_c_int8_t, 15_c_int8_t, 12_c_int8_t ]
     integer(c_size_t) :: edge, bit, index
     integer(c_int32_t) :: value, recovered
-    integer(c_int) :: syndrome, read_bit, expected_bit, correction, flip
+    integer(c_int) :: syndrome, read_bit, correction, flip
     status = 0
     if (count == 0_c_size_t) then
       status = 1
@@ -33,10 +33,8 @@ contains
         index = 32_c_size_t*edge + bit + 1_c_size_t
         syndrome = int(syndromes(index), c_int)
         read_bit = int(raw_logical(index), c_int)
-        expected_bit = int(expected(index), c_int)
         if (syndrome < 0 .or. syndrome > 15 .or. &
-            read_bit < 0 .or. read_bit > 1 .or. &
-            expected_bit < 0 .or. expected_bit > 1) then
+            read_bit < 0 .or. read_bit > 1) then
           status = 1
           return
         end if
@@ -46,10 +44,6 @@ contains
           if (mod(correction - 1, 3) /= 1) flip = 1
         end if
         recovered = ieor(read_bit, flip)
-        if (recovered /= expected_bit) then
-          status = 2
-          return
-        end if
         logical(index) = int(recovered, c_int8_t)
         corrections(index) = int(correction, c_int8_t)
         value = ior(value, ishft(recovered, int(bit)))

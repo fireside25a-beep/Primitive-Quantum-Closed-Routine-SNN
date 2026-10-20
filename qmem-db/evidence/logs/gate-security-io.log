@@ -1,0 +1,18 @@
+make: Entering directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'
+python3 tests/hash_crc.py
+QMEM_PROTO_ORACLE_PASS sha256=1000 crc32=1000 roundtrips=1000 bitflip_rejections=1000
+python3 tests/check.py
+Traceback (most recent call last):
+  File "/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db/tests/check.py", line 51, in <module>
+    run(BIN,'init',db,success=False)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db/tests/check.py", line 27, in run
+    raise AssertionError('wrong exit status for ' + ' '.join(map(str,args)) +
+                         '\nstdout=' + cp.stdout.decode(errors='replace')[:600] +
+                         '\nstderr=' + cp.stderr.decode(errors='replace')[:600])
+AssertionError: wrong exit status for /mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db/bin/qmem init /tmp/qmem_adapter_test_zfrdbrj9/qmem.db
+stdout=QMEM_SQLITE_DEV_INIT_PASS
+
+stderr=
+make: *** [Makefile:14: test] Error 1
+make: Leaving directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'

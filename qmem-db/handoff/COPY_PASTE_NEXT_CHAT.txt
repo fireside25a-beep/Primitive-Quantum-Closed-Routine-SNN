@@ -1,0 +1,83 @@
+READ THIS ENTIRE INSTRUCTION BEFORE RUNNING COMMANDS.
+
+I will attach `NeuroMantle-0.4.8-Unified.zip`. Treat that ZIP as the only
+authoritative baseline. Verify its SHA-256 first. The expected digest from the
+previous source audit is:
+
+383853cd0fba402dbdeede202565947015760778fc4deba753215f50e28e58cd
+
+Implement QMEM DB 1.0.0 beside the existing Neuromantle receipt chain. Do not
+replace the Neuromantle receipts, neuron transition, qmemory recovery, world
+feedback tableau, entropy ledgers, or observer semantics. Read the actual
+source before editing, especially `src/qmemory.cpp`, `src/qmemory.hpp`,
+`core/primitiveq.c`, `include/primitiveq.h`, `src/world.cpp`,
+`docs/COMBINED_TICK.md`, the root Makefile, and all qmemory/combined tests.
+
+The complete contract is in the attached handoff bundle:
+
+1. `QMEM_DB_CONTRACT.md`
+2. `BASELINE_AUDIT.md`
+3. `CORRECTIONS_AND_DECISIONS.md`
+4. `WORKFLOW_AND_GATES.md`
+5. `SOURCES_AND_LICENSES.md`
+
+Work rules:
+
+1. Make a new working copy. Preserve the input ZIP and all original files.
+2. Do not touch GitHub, open a pull request, publish, or use my account.
+3. Do not use destructive broad commands. No `rm -rf`, no reset, no replacing
+   the baseline in place.
+4. No mocks, templates, fake binaries, empty headers, sample-only paths,
+   renamed implementations, or tests that merely assert constants produced by
+   the same code under test.
+5. Do not claim physical quantum memory, hardware QEC, arbitrary coherent
+   logical qubits, or formal proof. QMEM stores classical stabilizer tableaus.
+6. Use real ANS Forth/Gforth source for the control plane, real GNU APL source
+   for the math definitions, real Souffle Datalog programs for queries, C11 for
+   the LMDB/protocol boundary, and vendored unmodified LMDB source. Python may
+   exist only in independent tests and packaging, not the hot path.
+7. If the host lacks a language or compiler, first try to obtain and vendor its
+   authoritative open-source source and license. If direct download is blocked,
+   use official documentation and public source to recreate the required
+   bounded runtime semantics, then prove conformance with independent tests.
+   Never substitute a script and call it the missing language.
+8. Preserve the existing qmemory generator order and syndrome bit packing. The
+   current source-derived syndrome vector for X, Z, Y on qubits 0 through 4 is:
+   `8 5 13 1 10 11 3 4 7 6 9 15 12 2 14`. The table printed in the original
+   design note is incompatible with the attached PrimitiveQ ordering and must
+   not be copied blindly.
+9. Correct the storage determinism claims exactly as described in
+   `CORRECTIONS_AND_DECISIONS.md`. Receipts commit a canonical logical state
+   root, not raw LMDB file bytes. Datalog output must be canonically sorted.
+10. QMEM reads happen in stable LMDB read transactions. An audited agent read
+    is two explicit phases: pure snapshot query, then an append-only
+    `agent_frame` write that commits request, snapshot root, sorted result, and
+    response hash. Do not hide a write inside a read API.
+11. The QMEM integration must be opt-in. With QMEM disabled, existing run and
+    verify receipts must remain byte-identical to the attached baseline.
+12. Export actual qmemory cells and actual committed coupled tick fields. Do
+    not infer or reconstruct data from the SVG or observer. The QMEM event must
+    bind the existing `before`, `state`, `event`, `qmemory_before`, qmemory root,
+    syndrome/correction data, and parent causal event.
+13. Every admitted write and every refused write emits a replayable
+    `QMEM_RECEIPT_V1`. Refusal never commits a partial database mutation.
+14. Run every gate in `WORKFLOW_AND_GATES.md`. Each gate needs a nonempty log,
+    exit status, command, compiler version, and actual pass/fail result. Never
+    write PASS into evidence unless that command ran successfully.
+15. Build from a clean tree, run optimized tests, run ASan and UBSan on all C11
+    boundaries, run fresh-extraction verification, generate a deterministic
+    manifest, and package one complete ZIP.
+16. Do not stop at a plan. Implement, connect, test, document, package, and
+    return the ZIP with its SHA-256, size, file count, and concise list of
+    verified gates. Be honest about any host-level skipped gate; do not convert
+    a skip into a pass or fabricate unavailable compiler results.
+
+Deliverable name:
+
+`NeuroMantle-0.5.0-QMEM-DB.zip`
+
+The archive must contain source, vendored license texts, build instructions,
+examples, real receipts, real query outputs, per-gate logs, provenance, and a
+source manifest. Do not include build caches, package caches, transient scratch
+trees, secrets, tokens, or user-specific absolute paths.
+

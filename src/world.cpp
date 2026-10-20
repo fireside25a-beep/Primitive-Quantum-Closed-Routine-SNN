@@ -2,6 +2,7 @@
 #include "neuro_world.h"
 #include "neuro_improve.h"
 #include "qecc_gate.hpp"
+#include "qmemory.hpp"
 #include "surreal/causal.hpp"
 #include "surreal/entropy.hpp"
 #include "surreal/hash.hpp"
@@ -28,13 +29,16 @@ struct Edge {std::uint16_t a,b;std::int32_t weight,lo,hi;std::uint16_t delay,plu
 struct Field {U64 mass,threshold;std::uint16_t sensor;I64 current;};
 struct Stim {U64 tick;std::uint16_t neuron;I64 current;bool noise;};
 struct Trial {U64 source,target;I64 current;};
+struct ReadoutFlip {U64 tick;unsigned rule,round,generator;};
 struct Config {
     U64 clock=0,seed=0,steps=0;unsigned qubits=0,goal_node=0,goal_neuron=0;
-    bool have_seed=false,have_goal=false,five_code=false;
+    bool have_seed=false,have_goal=false,five_code=false,qmemory=false;
     std::string certificate_label,certificate_hash,certificate_proof;
     std::vector<Neuron> neurons;std::vector<Edge> edges;std::vector<Field> fields;
     std::vector<nm_world_link> links;std::vector<nm_world_rule> rules;
     std::vector<Stim> stimuli,pulses;std::vector<Trial> train,validation,holdout;
+    std::vector<ReadoutFlip> readout_flips;
+    std::vector<nm_qmemory::Fault> qfaults;
 };
 template<class T>T number(std::istringstream &in){
     std::string s;if(!(in>>s))throw std::runtime_error("missing integer");
@@ -93,6 +97,19 @@ Config parse(const std::string &text){
                 for(unsigned char c:s.certificate_label)if(c<32||c==127||c==':')
                     throw std::runtime_error("invalid certificate path label");
                 s.five_code=true;
+            }else if(op=="qmemory"){
+                std::string type;
+                if(!(in>>type)||type!="weights5"||s.qmemory)
+                    throw std::runtime_error("invalid or duplicate world QMemory mode");
+                finish(in);s.qmemory=true;
+            }else if(op=="qfault"){
+                nm_qmemory::Fault f{number<U64>(in),number<std::size_t>(in),
+                                   number<unsigned>(in),number<unsigned>(in),0};
+                std::string gate;
+                if(!(in>>gate)||gate.size()!=1||gate.find_first_not_of("XYZ")!=std::string::npos||
+                   f.bit>=32||f.qubit>=5)
+                    throw std::runtime_error("invalid world QMemory fault");
+                finish(in);f.op=gate[0];s.qfaults.push_back(f);
             }else if(op=="neuron"){
                 Neuron n{number<std::uint16_t>(in),number<I64>(in),number<I64>(in),
                          number<std::uint32_t>(in),number<std::uint32_t>(in)};
@@ -118,6 +135,10 @@ Config parse(const std::string &text){
                 r.op=gate[0];r.a=number<std::uint16_t>(in);r.b=number<std::uint16_t>(in);
                 r.output_neuron=number<std::uint16_t>(in);r.output_current=number<I64>(in);
                 finish(in);s.rules.push_back(r);
+            }else if(op=="qreadout_flip"){
+                ReadoutFlip f{number<U64>(in),number<unsigned>(in),
+                              number<unsigned>(in),number<unsigned>(in)};
+                finish(in);s.readout_flips.push_back(f);
             }else if(op=="stim"||op=="field_noise"||op=="pulse"){
                 Stim x{number<U64>(in),number<std::uint16_t>(in),number<I64>(in),op=="field_noise"};
                 finish(in);if(x.current<0)throw std::runtime_error("negative current");
@@ -137,13 +158,29 @@ Config parse(const std::string &text){
        !s.steps||s.steps>128||s.neurons.empty()||s.neurons.size()>NM_MAX_NEURONS||
        s.edges.size()>NM_MAX_EDGES||s.fields.empty()||s.fields.size()>NM_WORLD_NODES||
        s.links.empty()||s.links.size()>NM_WORLD_LINKS||s.rules.size()>NM_WORLD_RULES||
-       s.stimuli.size()>128||s.pulses.size()>3||s.train.size()>8||s.validation.size()>8||s.holdout.size()>8)
+       s.stimuli.size()>128||s.pulses.size()>3||s.train.size()>8||s.validation.size()>8||s.holdout.size()>8||
+       s.readout_flips.size()>128||s.qfaults.size()>4096)
         throw std::runtime_error("world declaration missing or capacity exceeded");
     if(s.have_goal&&(s.goal_node>=s.fields.size()||s.goal_neuron>=NM_MAX_NEURONS))
         throw std::runtime_error("invalid goal");
     if(s.five_code){
         if(s.qubits!=5)throw std::runtime_error("certified code needs exactly five qubits");
         admit_five_certificate(s);
+    }
+    if(s.qmemory&&(!s.five_code||s.edges.empty()))
+        throw std::runtime_error("world QMemory requires five-qubit certificate and synapses");
+    if(!s.qmemory&&!s.qfaults.empty())
+        throw std::runtime_error("world QMemory fault requires weights5 mode");
+    for(const auto &f:s.qfaults)if(f.tick>=s.steps||f.edge>=s.edges.size())
+        throw std::runtime_error("world QMemory fault beyond duration or synapses");
+    for(size_t i=0;i<s.readout_flips.size();i++){
+        const auto &f=s.readout_flips[i];
+        if(!s.five_code||f.tick>=s.steps||f.rule>=s.rules.size()||
+           s.rules[f.rule].op!='Q'||f.round>=3||f.generator>=4)
+            throw std::runtime_error("invalid Q readout fault declaration");
+        for(size_t j=0;j<i;j++)if(s.readout_flips[j].tick==f.tick&&
+                                  s.readout_flips[j].rule==f.rule)
+            throw std::runtime_error("multiple readout faults for one Q rule");
     }
     for(const auto &x:s.stimuli)if(x.tick>=s.steps)throw std::runtime_error("world stimulus beyond duration");
     for(const auto &x:s.pulses)if(x.tick>=s.steps)throw std::runtime_error("world pulse beyond duration");
@@ -203,20 +240,28 @@ std::string state(const nm_world &w){
     if(w.five_code)data+="code5=1:faults="+std::to_string(w.five_faults)+"\n";
     return hash(data);
 }
-struct Sample {U64 tick,field,flux;std::size_t spikes;unsigned measured;};
-struct Run {std::string receipt;std::vector<Sample> samples;U64 final_mass=0,goal_spikes=0;};
+struct Sample {U64 tick,field,flux;std::size_t spikes;unsigned measured,memory_corrected=0;};
+struct Run {std::string receipt,qmem_cells;std::vector<Sample> samples;U64 final_mass=0,goal_spikes=0;};
 Run execute(const Config &s,const std::string &original,const Trial *trial=nullptr,
-            const std::int32_t *parameters=nullptr,int pulse_mask=-1){
+            const std::int32_t *parameters=nullptr,int pulse_mask=-1,bool export_cells=false){
     auto w=instantiate(s,trial,parameters);
+    std::unique_ptr<nm_qmemory::Weights> memory;
+    if(s.qmemory)memory=std::make_unique<nm_qmemory::Weights>(*w->network);
     surreal::EntropyLedger quantum(s.seed,UINT64_C(0x5051));
     surreal::EntropyLedger field(s.seed,UINT64_C(0x464c));
     surreal::CausalGraph graph;
     Run run;std::string &receipt=run.receipt;
-    receipt=(s.five_code?"NEUROMANTLE_COUPLED_QECC5_V1\n":"NEUROMANTLE_COUPLED_V1\n");
+    if(export_cells){
+        if(!memory)throw std::runtime_error("QMEM export requires weights5");
+        run.qmem_cells="QMEM_EXPORT_V1\n";
+    }
+    receipt=(s.qmemory?"NEUROMANTLE_COUPLED_MEMORY_QECC5_V1\n":
+             s.five_code?"NEUROMANTLE_COUPLED_QECC5_V1\n":"NEUROMANTLE_COUPLED_V1\n");
     receipt+="scenario="+hash(original)+"\nclock_ns="+
         std::to_string(s.clock)+"\nseed="+std::to_string(s.seed)+"\n";
     if(s.five_code)receipt+="qecc_certificate="+s.certificate_label+":"+
         s.certificate_hash+":"+s.certificate_proof+"\n";
+    if(memory)receipt+="qmemory=weights5:"+std::to_string(memory->edges())+":"+memory->root()+"\n";
     if(trial)receipt+="trial="+std::to_string(trial->source)+":"+
         std::to_string(trial->target)+":"+std::to_string(trial->current)+"\n";
     if(pulse_mask>=0)receipt+="pulse_mask="+std::to_string(pulse_mask)+"\n";
@@ -245,17 +290,40 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
         }
         for(unsigned i=0;i<w->rule_count;i++)if(w->rules[i].op=='M'||w->rules[i].op=='R')
             input.draws[i]=quantum.draw();
-        auto before=state(*w);nm_world_report report{};
-        if(nm_world_step(w.get(),&input,&report))throw std::runtime_error("coupled transition refused");
-        auto after=state(*w);
+        for(const auto &f:s.readout_flips)if(f.tick==tick)
+            input.readout_flip[f.rule]=static_cast<std::uint8_t>(1u+4u*f.round+f.generator);
+        auto committed_state=[&](){return memory?
+            hash("NM_COUPLED_MEMORY_STATE_V1|"+state(*w)+"|"+memory->root()):state(*w);};
+        auto before=committed_state();nm_world_report report{};
+        nm_qmemory::TickReport combined;
+        std::string memory_faults;
+        if(memory){
+            std::vector<nm_qmemory::Fault> faults;
+            for(const auto &f:s.qfaults)if(f.tick==tick){
+                faults.push_back(f);
+                if(!memory_faults.empty())memory_faults+=",";
+                memory_faults+=std::to_string(f.edge)+":"+std::to_string(f.bit)+":"+
+                    std::to_string(f.qubit)+":"+f.op;
+            }
+            combined=memory->step(*w,input,faults);report=combined.world;
+        }else if(nm_world_step(w.get(),&input,&report))throw std::runtime_error("coupled transition refused");
+        auto after=committed_state();
         auto eroot=hash(quantum.root()+"|"+field.root());
         surreal::Event event;
         event.local_time=surreal::Rational(static_cast<long long>(tick*s.clock));
-        event.region="coupled";event.law=s.five_code?
-            "nm.certified_qecc5_lif_v1":"nm.conservative_clifford_lif_v1";
+        event.region="coupled";event.law=memory?"nm.certified_qecc5_memory_lif_v1":
+            s.five_code?"nm.certified_qecc5_lif_v1":"nm.conservative_clifford_lif_v1";
         event.before_hash=before;event.after_hash=after;
         event.invariant_hash=hash(std::to_string(report.mass_before)+":"+
             std::to_string(report.mass_after)+":"+std::to_string(report.flux_total));
+        if(memory){
+            std::string outcomes;
+            for(unsigned i=0;i<w->rule_count;i++)if(w->rules[i].op=='Q')
+                outcomes+=std::to_string(i)+":"+std::to_string(report.syndromes[i])+":"+
+                    std::to_string(report.corrections[i])+",";
+            event.invariant_hash=hash("NM_COUPLED_MEMORY_EVENT_V1|"+event.invariant_hash+"|"+
+                std::to_string(combined.memory_corrected)+"|"+memory_faults+"|"+outcomes);
+        }
         event.entropy_root=eroot;if(!parent.empty())event.parents.push_back(parent);
         parent=graph.append(std::move(event));
         std::string fired;for(size_t i=0;i<report.spikes.count;i++){
@@ -275,10 +343,18 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
             for(unsigned i=0;i<w->rule_count;i++)if(w->rules[i].op=='Q')
                 receipt+=std::to_string(i)+":"+std::to_string(report.syndromes[i])+":"+
                     std::to_string(report.corrections[i])+",";
+            for(unsigned i=0;i<w->rule_count;i++)if(input.readout_flip[i]){
+                auto flip=input.readout_flip[i]-1u;
+                receipt+=";readout_flip="+std::to_string(i)+":"+
+                    std::to_string(flip/4u)+":"+std::to_string(flip%4u);
+            }
         }
+        if(memory)receipt+=";before="+before+";world_state="+state(*w)+";qmemory_before="+combined.memory_before+
+            ";qmemory="+combined.memory_after+":"+std::to_string(combined.memory_corrected)+":"+memory_faults;
         receipt+=";state="+after+";entropy="+eroot+";event="+parent+"\n";
+        if(export_cells)run.qmem_cells+=memory->export_snapshot(tick);
         run.samples.push_back({tick,w->nodes[s.have_goal?s.goal_node:0].mass,
-                               report.flux_total,report.spikes.count,report.measurement_ones});
+                               report.flux_total,report.spikes.count,report.measurement_ones,combined.memory_corrected});
     }
     run.final_mass=w->nodes[s.have_goal?s.goal_node:0].mass;
     if(s.have_goal)run.goal_spikes=w->network->neurons[s.goal_neuron].spikes;
@@ -287,11 +363,12 @@ Run execute(const Config &s,const std::string &original,const Trial *trial=nullp
     receipt+="receipt_root="+hash(receipt)+"\n";
     return run;
 }
-std::string svg(const Run &run,bool five_code){
+std::string svg(const Run &run,bool five_code,bool memory=false){
     U64 maximum=1;for(auto row:run.samples)maximum=std::max(maximum,row.field);
     const unsigned width=800,height=300;
     std::string graph="<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"300\" viewBox=\"0 0 800 300\">\n";
-    graph+=five_code?"<title>Certified five-qubit syndrome and SNN feedback</title>\n":
+    graph+=memory?"<title>One-tick encoded weight recovery and five-qubit feedback</title>\n":
+        five_code?"<title>Certified five-qubit syndrome and SNN feedback</title>\n":
         "<title>Executed coupled field, spike, and PrimitiveQ measurements</title>\n";
     graph+="<rect width=\"800\" height=\"300\" fill=\"#101b2c\"/>\n";
     graph+="<path d=\"M 48 30 V 240 H 780\" stroke=\"#91a6bb\" fill=\"none\"/>\n";
@@ -303,9 +380,11 @@ std::string svg(const Run &run,bool five_code){
         path+=std::to_string(x)+" "+std::to_string(y);
         if(r.spikes)graph+="<circle cx=\""+std::to_string(x)+"\" cy=\"262\" r=\"3\" fill=\"#f7bd67\"/>\n";
         if(r.measured)graph+="<circle cx=\""+std::to_string(x)+"\" cy=\"277\" r=\"3\" fill=\"#a891ff\"/>\n";
+        if(memory&&r.memory_corrected)graph+="<circle cx=\""+std::to_string(x)+"\" cy=\"250\" r=\"3\" fill=\"#53d7e5\"/>\n";
     }
     graph+="<path d=\""+path+"\" stroke=\"#57d6af\" stroke-width=\"3\" fill=\"none\"/>\n";
-    graph+=five_code?
+    graph+=memory?
+        "<text x=\"48\" y=\"22\" fill=\"white\">mass; orange: spikes; violet: feedback syndrome; cyan: weight recovery</text>\n":five_code?
         "<text x=\"48\" y=\"22\" fill=\"white\">target mass; orange: spikes; violet: nonzero QECC syndrome</text>\n":
         "<text x=\"48\" y=\"22\" fill=\"white\">target mass; orange: spikes; violet: measured one</text>\n";
     graph+="<text x=\"48\" y=\"291\" fill=\"#b7c9dc\">receipt SHA-256: "+hash(run.receipt)+"</text>\n</svg>\n";
@@ -351,9 +430,9 @@ std::string search_graph(const nm_improve_trace *trace,unsigned count,const std:
 }
 } // namespace
 
-Result run(const std::string &scenario){
-    try {auto s=parse(scenario);auto done=execute(s,scenario);
-        return {done.receipt,svg(done,s.five_code),true};
+Result run(const std::string &scenario,bool export_cells){
+    try {auto s=parse(scenario);auto done=execute(s,scenario,nullptr,nullptr,-1,export_cells);
+        return {done.receipt,svg(done,s.five_code,s.qmemory),done.qmem_cells,true};
     }catch(const std::exception &e){return refusal(scenario,e.what());}
 }
 Result improve(const std::string &scenario){
@@ -400,7 +479,7 @@ Result improve(const std::string &scenario){
                 hash(after.receipt)+"\n";
         }
         receipt+="receipt_root="+hash(receipt)+"\n";
-        return {receipt,search_graph(traces.get(),result->attempts,hash(receipt)),true};
+        return {receipt,search_graph(traces.get(),result->attempts,hash(receipt)),{},true};
     }catch(const std::exception &e){return refusal(scenario,e.what());}
 }
 Result interaction(const std::string &scenario){
@@ -447,7 +526,7 @@ Result interaction(const std::string &scenario){
             std::to_string(d(spike,7))+"</text>\n";
         graph+="<text x=\"35\" y=\"324\" fill=\"#b7c9dc\">receipt SHA-256: "+hash(receipt)+
             "</text>\n</svg>\n";
-        return {receipt,graph,true};
+        return {receipt,graph,{},true};
     }catch(const std::exception &e){return refusal(scenario,e.what());}
 }
 }

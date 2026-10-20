@@ -1,4 +1,4 @@
-name: NeuroMantle nightly 0.4.6.3
+name: NeuroMantle nightly 0.4.8
 on:
   schedule:
     - cron: '17 3 * * *'
@@ -23,14 +23,15 @@ jobs:
       - run: ./bin/neuromantle world-run examples/coupled_world.nmw evidence/coupled/run.receipt evidence/coupled/dynamics.svg > /dev/null && ./bin/neuromantle world-improve examples/coupled_world.nmw evidence/coupled/improve.receipt evidence/coupled/improve.svg > /dev/null && ./bin/neuromantle world-interaction examples/coupled_world.nmw evidence/coupled/interaction.receipt evidence/coupled/interaction.svg > /dev/null && python3 tests/world_integration.py
       - run: ./bin/neuromantle run examples/ecc.nm evidence/qecc/admitted.receipt && ./bin/neuromantle verify examples/ecc.nm evidence/qecc/admitted.receipt
       - run: ./bin/neuromantle run examples/qmemory_weights.nm evidence/qmemory/run.receipt > evidence/qmemory/run.stdout && ./bin/neuromantle verify examples/qmemory_weights.nm evidence/qmemory/run.receipt > evidence/qmemory/verify.stdout && python3 scripts/plot_qmemory.py evidence/qmemory/run.receipt evidence/qmemory/dynamics.svg
-      - run: python3 scripts/package.py NeuroMantle-0.4.6.3-readout-decoder.zip
-      - run: python3 scripts/check_release.py NeuroMantle-0.4.6.3-readout-decoder.zip
-      - run: sha256sum NeuroMantle-0.4.6.3-readout-decoder.zip > NeuroMantle-0.4.6.3-readout-decoder.zip.sha256
+      - run: ./bin/neuromantle world-verify examples/combined_memory_feedback.nmw evidence/unified/run.receipt evidence/unified/dynamics.svg
+      - run: python3 scripts/package.py NeuroMantle-0.4.8-Unified.zip
+      - run: python3 scripts/check_release.py NeuroMantle-0.4.8-Unified.zip
+      - run: sha256sum NeuroMantle-0.4.8-Unified.zip > NeuroMantle-0.4.8-Unified.zip.sha256
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: NeuroMantle-0.4.6.3-readout-decoder
+          name: NeuroMantle-0.4.8-Unified
           path: |
-            NeuroMantle-0.4.6.3-readout-decoder.zip
-            NeuroMantle-0.4.6.3-readout-decoder.zip.sha256
+            NeuroMantle-0.4.8-Unified.zip
+            NeuroMantle-0.4.8-Unified.zip.sha256
           if-no-files-found: error
           retention-days: 14

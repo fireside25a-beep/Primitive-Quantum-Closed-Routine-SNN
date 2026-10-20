@@ -1,0 +1,17 @@
+# Certified five-qubit feedback with one flipped classical ancilla readout.
+clock_ns 100000
+seed 4
+qubits 5
+qecc_certificate examples/qecc/five_qubit.sqecc
+steps 3
+neuron 0 0 10 0 0
+neuron 1 0 10 0 0
+edge 0 1 1 1 0 0 8 1 1
+field 80 100 0 0
+field 20 100 1 0
+flux 0 1 0 1 0 0 0 100
+qrule 0 X 0 0 0 0
+qrule 0 Q 0 0 1 10
+qreadout_flip 0 1 1 2
+stim 0 0 10
+goal 1 1

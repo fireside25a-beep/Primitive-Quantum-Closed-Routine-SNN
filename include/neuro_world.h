@@ -41,6 +41,9 @@ typedef struct {
     int64_t stimulus_current;
     /* Indexed by rule. Caller records the provenance of these draw values. */
     uint64_t draws[NM_WORLD_RULES];
+    /* 0 means clean; 1+4*round+generator flips one classical ancilla
+     * readout in three syndrome rounds for a fired Q rule. */
+    uint8_t readout_flip[NM_WORLD_RULES];
 } nm_world_input;
 typedef struct {
     nm_spikes spikes;

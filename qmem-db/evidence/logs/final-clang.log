@@ -1,0 +1,16 @@
+COMMAND=make -C qmem-db clean all test CC=clang
+make: Entering directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'
+rm -f bin/qmem bin/qmem-sanitize bin/qmem-probe
+mkdir -p bin
+clang -std=c11 -O2 -Wall -Wextra -Wpedantic -Wno-misleading-indentation -Wno-deprecated-declarations -Werror -Isrc -I../include src/main.c src/qmem.c ../core/primitiveq.c -lsqlite3 -lcrypto -o bin/qmem
+mkdir -p bin
+clang -std=c11 -O2 -Wall -Wextra -Wpedantic -Wno-misleading-indentation -Wno-deprecated-declarations -Werror -Isrc -I../include tests/probe.c src/qmem.c -lcrypto -o bin/qmem-probe
+python3 tests/hash_crc.py
+QMEM_PROTO_ORACLE_PASS sha256=1000 crc32=1000 roundtrips=1000 bitflip_rejections=1000
+python3 tests/check.py
+QMEM_DEV_DB_TAMPER_PASS independent_table_modifications= 9
+QMEM_DEV_TEST_PASS ticks=4 codewords=128 tableau_rows=1280 tamper_cases=5 replay=byte-identical
+QMEM_DEV_SHA256 a5e7258cd18a3fffeae04b5bbab8e767299a1b3f54747e57d05d3fcddc234063
+python3 tests/security_io.py
+QMEM_DEV_SECURITY_IO_PASS absent_db_refusal read_only_root symlink_hardlink_refusal invalid_source_rollback
+make: Leaving directory '/mnt/data/qmem_dev/NeuroMantle-0.4.8-unified/qmem-db'

@@ -1,4 +1,4 @@
-# PrimitiveQ and coupled world, 0.4.6.1
+# PrimitiveQ and coupled world, 0.4.7
 
 This is an executable, bounded **classical stabilizer simulation** coupled to the existing SNN, not a quantum processor, a physical brain, or a proof of recursive general intelligence.
 
@@ -25,9 +25,9 @@ The legacy two-qubit world and the earlier `.nm` five-qubit certificate gate rem
 
 `qubits 5` and `qecc_certificate PATH` together select the encoded mode. Admission invokes the bounded Surreal verifier and requires its `[[5,1,3]]` result. It also parses the 144-byte `SQECC001` certificate and requires the exact generator order `XZZXI`, `IXZZX`, `XIXZZ`, `ZXIXZ`, logical X `XXXXX` and logical Z `ZZZZZ` used in the runtime. The receipt binds the certificate bytes, Surreal proof and verifier executable hashes. A changed certificate or different code refuses admission.
 
-The bounded C tableau prepares encoded `|0_L>` by placing four positive generators and positive logical Z in its stabilizer rows, then constructing a symplectic dual basis by a deterministic finite search. A spike-triggered X, Y or Z rule applies one physical Pauli to one of the five qubits. A `Q` rule reads the signs of four commuting generators in bit order, looks up the unique one-qubit Pauli from the fifteen nonzero syndromes, applies that correction and injects its configured current into the output neuron's next tick when the syndrome is nonzero. The tableau, four-bit syndrome and correction index are included in the atomic state and causal receipt. The SVG marks the syndrome occurrence and subsequent SNN spike.
+The bounded C tableau prepares encoded `|0_L>` by placing four positive generators and positive logical Z in its stabilizer rows, then constructing a symplectic dual basis by a deterministic finite search. A spike-triggered X, Y or Z rule applies one declared Pauli to one of the five simulated qubits. A `Q` rule appends a sixth simulated `|0>` ancilla, maps X terms to the Z basis with H gates, uses data-to-ancilla CNOTs for each generator, measures and resets the ancilla, then repeats the four measurements three times. Majority signs select the unique one-qubit Pauli from fifteen nonzero syndromes. Correction and a clean follow-up circuit read precede any next-tick current injection for a nonzero syndrome. The tableau, four-bit syndrome and correction index enter the atomic state and causal receipt. The SVG marks the syndrome occurrence and subsequent SNN spike.
 
-The code corrects **one declared Pauli fault between syndrome reads**. Two fault rules before a read refuse the whole transition without changing network, field or tableau state. This does not diagnose arbitrary concurrent physical faults or prove fault-tolerant hardware, a noisy measurement circuit, general quantum computation or protection of SNN RAM. The syndrome is deterministic here because a Pauli error maps an encoded stabilizer state to another simultaneous generator eigenstate. `H`, `S`, `CNOT`, `M` and `R` rules are rejected in this constrained encoded mode so arbitrary gates cannot silently invalidate the decoder assumption. The legacy two-qubit mode retains those gates and its exact receipt format.
+The code corrects **one declared Pauli fault between syndrome reads**. Two fault rules before a read refuse the whole transition without changing network, field or tableau state. `qreadout_flip TICK RULE ROUND GENERATOR` injects one classical readout inversion into the three-round `Q` circuit and records its location in the receipt. It must address a fired `Q` rule; a second flip for the same rule refuses. The majority handles that one declared readout error. It does not tolerate arbitrary faults in preparation, CNOT, reset or multiple measurement locations; a single bare ancilla can propagate correlated data faults. It does not prove fault-tolerant physical hardware, general quantum computation or protection of SNN RAM. The syndrome is deterministic here because a Pauli error maps the encoded state to another simultaneous generator eigenstate. `H`, `S`, `CNOT`, `M` and `R` rules are rejected in this constrained encoded mode so arbitrary gates cannot silently invalidate the decoder assumption. The legacy two-qubit mode retains those gates and its exact receipt format.
 
 Run and independently replay the included coupled result from the project root:
 
@@ -35,10 +35,11 @@ Run and independently replay the included coupled result from the project root:
 ./bin/neuromantle world-run examples/coupled_five_code.nmw evidence/qecc_coupled/run.receipt evidence/qecc_coupled/dynamics.svg
 ./bin/neuromantle world-verify examples/coupled_five_code.nmw evidence/qecc_coupled/run.receipt evidence/qecc_coupled/dynamics.svg
 python3 tests/five_code_oracle.py
+python3 tests/five_circuit_oracle.py
 python3 tests/five_code_integration.py
 ```
 
-The first tick shows syndrome 8 for a physical X fault on qubit zero and correction index 1. The target neuron spikes at the next tick. Removing the `Q` rule removes that spike. The 32-amplitude oracle independently projects computational zero into the code space and checks all fifteen Pauli syndromes and recoveries; the C tests check tableau and atomic refusal. All claims are within this finite simulator and scenario.
+The first tick shows syndrome 8 for a declared X fault on qubit zero and correction index 1. The target neuron spikes at the next tick. Removing the `Q` rule removes that spike. The 32-amplitude oracle independently projects computational zero into the code space and checks all fifteen Pauli syndromes. A separate 64-amplitude oracle executes the five data qubits and sixth ancilla gate by gate for both logical basis states, all fifteen Pauli faults and three extraction rounds. The C and integration tests also exercise all twelve single readout-flip locations, atomic refusal and replay. All claims are within this finite simulator and scenario.
 
 Five raw host runs in [`PRIMITIVEQ_RAW.csv`](../evidence/coupled/PRIMITIVEQ_RAW.csv) used 65,536 16-qubit Pauli errors, 15 independent commuting upper-triangular Z generators, and 40 repeated passes. The run with median scalar time took 46,273,816 ns for scalar passes and 26,065,687 ns for one preparation plus 40 prepared passes, a 1.775× ratio on this machine. The unprepared bitplane path took 73,109,594 ns on that run, slower than scalar. Re-run `python3 scripts/run_primitiveq_bench.py` for the current host; it records five raw runs and regenerates the [measured graph](../evidence/coupled/primitiveq_benchmark.svg). This does not benchmark network throughput or a quantum computer.
 
@@ -69,3 +70,11 @@ The example's four network ticks keep total mass at one million. With seed 4, a 
 The quantum transition model follows the stabilizer tableau tradition described by [Aaronson and Gottesman, *Improved Simulation of Stabilizer Circuits* (2004)](https://arxiv.org/abs/quant-ph/0406196). [Stim](https://github.com/quantumlib/Stim) provides a public high-performance stabilizer simulator for context; PrimitiveQ is independent bounded C11 code and is **not** claimed to match Stim's performance or scope. Conservative old-state flux draws on the standard finite-volume idea of balancing transfers; see [LeVeque, *Finite Volume Methods for Hyperbolic Problems*](https://www.clawpack.org/fvmhp_materials/). Three-pulse coefficients use standard subset Möbius inversion; the mathematics itself is not claimed as an invention. No external research implementation was copied into the new modules.
 
 The new combination is an experiment in causal coupling and verifiable replay. It does not establish scientific priority, any speed ranking against Brian 2/NEST/Stim, hardware quantum advantage, or general autonomous self-improvement.
+
+## Encoded memory in the same tick
+
+Enable `qmemory weights5` in a certified five-qubit scenario to run both
+correction paths on the same network. `qfault` addresses encoded weight bits;
+`qrule` and `qreadout_flip` address the feedback tableau. The transition is
+staged across both layers. [Combined tick](COMBINED_TICK.md) defines the full
+contract and the bundled `examples/combined_memory_feedback.nmw` scenario.

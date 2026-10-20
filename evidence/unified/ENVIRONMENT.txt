@@ -1,0 +1,9 @@
+Validation host: Linux 6.18.44 x86_64
+C compiler: cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+C++ compiler: c++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Fortran compiler: GNU Fortran (conda-forge gcc 16.2.0-7) 16.2.0
+Fortran runtime search path: /workspace/scratch/6fa896026525/fortran-env/lib
+Fortran validation selected the native Fortran decoder and linked libgfortran.
+Sanitizer compiler flags: -O1 -g -fsanitize=address,undefined -fno-omit-frame-pointer -Wall -Wextra -Wpedantic -Werror
+Sanitizer runtime: ASAN_OPTIONS=detect_leaks=0:halt_on_error=1; UBSAN_OPTIONS=halt_on_error=1
+The host denies AF_UNIX socket creation in the integration test sandbox.

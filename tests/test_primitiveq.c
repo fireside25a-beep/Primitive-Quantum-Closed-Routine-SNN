@@ -1,5 +1,6 @@
 #include "primitiveq.h"
 #include <assert.h>
+#include <limits.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -53,6 +54,14 @@ int main(void){
     assert(!pq_init_five_code(&q));
     unsigned syndrome=99,correction=99;
     assert(!pq_five_syndrome(&q,&syndrome)&&syndrome==0);
+    assert(!pq_five_syndrome_circuit(&q,&syndrome)&&syndrome==0);
+    unsigned logical_bit=99;
+    assert(!pq_five_logical_z_circuit(&q,&logical_bit)&&logical_bit==0);
+    for(unsigned round=0;round<3;round++)for(unsigned gen=0;gen<4;gen++)
+        assert(!pq_five_syndrome_circuit_readout(&q,round,gen,&syndrome)&&syndrome==0);
+    assert(pq_five_syndrome_circuit_readout(&q,3,0,&syndrome));
+    assert(pq_five_syndrome_circuit_readout(&q,0,4,&syndrome));
+    assert(pq_five_syndrome_circuit_readout(&q,UINT_MAX,0,NULL));
     assert(!pq_five_correct(&q,&syndrome,&correction)&&!correction);
     for(unsigned qubit=0;qubit<5;qubit++)for(unsigned kind=0;kind<3;kind++){
         pq_state fault=q;
@@ -60,6 +69,20 @@ int main(void){
         assert(!pq_pauli(&fault,qubit,op[kind]));
         assert(!pq_five_syndrome(&fault,&syndrome));
         assert(syndrome==syndromes[3*qubit+kind]);
+        assert(!pq_five_syndrome_circuit(&fault,&syndrome));
+        assert(syndrome==syndromes[3*qubit+kind]);
+        assert(!pq_five_logical_z_circuit(&fault,&logical_bit));
+        assert(logical_bit==(unsigned)(kind!=1));
+        for(unsigned round=0;round<3;round++)for(unsigned gen=0;gen<4;gen++){
+            unsigned measured=0;
+            assert(!pq_five_syndrome_circuit_readout(&fault,round,gen,&measured));
+            assert(measured==syndrome);
+            pq_state recovered=fault;
+            unsigned sign=0,code=0;
+            assert(!pq_five_correct_readout(&recovered,round,gen,&sign,&code));
+            assert(sign==syndrome&&code==3*qubit+kind+1);
+            assert(!memcmp(&recovered,&q,sizeof(q)));
+        }
         assert(!pq_five_correct(&fault,&syndrome,&correction));
         assert(correction==3*qubit+kind+1);
         assert(!pq_five_syndrome(&fault,&syndrome)&&!syndrome);
@@ -68,6 +91,7 @@ int main(void){
     /* The same decoder also preserves the negative logical-Z codeword. */
     for(unsigned physical=0;physical<5;physical++)assert(!pq_pauli(&q,physical,'X'));
     assert(q.rows[9].phase==2);
+    assert(!pq_five_logical_z_circuit(&q,&logical_bit)&&logical_bit==1);
     for(unsigned qubit=0;qubit<5;qubit++)for(unsigned kind=0;kind<3;kind++){
         pq_state fault=q;
         const char op[3]={'X','Z','Y'};

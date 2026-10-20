@@ -1,15 +1,16 @@
-# NeuroMantle 0.4.6.3 source archive
+# NeuroMantle 0.4.8 source archive
 
-`NeuroMantle-0.4.6.3-readout-decoder.zip` contains the current SNN runtime,
-PrimitiveQ coupled world, Fortran readout decoder, source, tests, examples,
+`NeuroMantle-0.4.8-Unified.zip` contains the current SNN runtime,
+PrimitiveQ coupled world, circuit readout decoder, source, tests, examples,
 receipts, graphs, raw measurements and the supplied companion components.
 [Development path](DEVELOPMENT_PATH.md) and the [evidence index](../evidence/INDEX.md)
 put the current release and earlier evaluations in chronological context.
 
-Build on Linux with C11, C++23 and Fortran 2008 compilers, Python 3 and Make.
+Build on Linux with C11 and C++23 compilers, Python 3 and Make. Fortran 2008
+is used if its compiler is present; otherwise the C11 decoder is selected.
 The bundled Surreal and Vanta command binaries target Linux x86-64; source is
 supplied. `make test` covers network, timing, experiments, AI admission,
-SECDED, PrimitiveQ, encoded memory and coupled transitions. Companion checks
+SECDED, PrimitiveQ, encoded memory, combined memory/feedback transactions and coupled transitions. Companion checks
 are `make -C vendor/devcli test`, `make vanta-check`, `make companions` and
 `make qecc-check`.
 
